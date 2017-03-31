@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -35,6 +36,7 @@ import java.net.UnknownHostException;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.LineNumberInputStream;
 import java.lang.reflect.Array;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
@@ -53,12 +55,14 @@ public class ServerCliente extends JFrame implements IServer {
 	private JButton btnDesconectar;
 	private IServer servico,servicoCliente;
 	private Registry registry,registryCliente;
-	private List<Arquivo> listaArquivos = new ArrayList<>();
-	private Map<Cliente, List<Arquivo>> mapaClientes = new HashMap<>();
+	Arquivo arq = new Arquivo();
+	private List<String> listaArquivos = new ArrayList<>();
+	private Cliente cliente;
+	private Map<Cliente, List<String>> mapaClientes = new HashMap<>();
 	private JScrollPane scrollPaneServidor;
 	private JTextArea textAreaServidor;
 	private JLabel lblLogViwer;
-	private Cliente cliente;
+	
 	
 
 	/**
@@ -247,6 +251,7 @@ public class ServerCliente extends JFrame implements IServer {
 		
 //coisas do Cliente
 		
+		
 		textFieldIpCliente.setText("192.168");
 		textFieldPortaCliente.setText("1818");
 		
@@ -341,6 +346,16 @@ public class ServerCliente extends JFrame implements IServer {
 			registryCliente = LocateRegistry.getRegistry(sIp,iPorta);
 			servicoCliente = (IServer) registryCliente.lookup(IServer.NOME_SERVICO);
 			
+			cliente.setNome("kaike");
+			cliente.setId(1);
+			cliente.setIp(mostrarIP());
+			cliente.setPorta(iPorta);
+			
+			cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
+			
+			registrarCliente(cliente);
+			//cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
+			
 			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
 			
 			
@@ -378,21 +393,26 @@ public class ServerCliente extends JFrame implements IServer {
 	public void registrarCliente(Cliente c) throws RemoteException {
 		// TODO Auto-generated method stub
 		
-		Arquivo arq = new Arquivo();
+		
 		
 		File dirStart = new File(".\\");
 		
 		for (File file : dirStart.listFiles()) {
 			if (file.isFile()) {
 				arq.setNome(file.getName());
-				arq.setTamanho(file.length());
-				listaArquivos.add(arq);
+				//arq.setTamanho(file.length());
+				listaArquivos.add(arq.getNome());
 			}
 		}
 		
 		mapaClientes.put(c, listaArquivos);
 		
-		System.out.println(Arrays.asList(mapaClientes));
+		//mostrando hashmap
+		
+		for (Entry<Cliente, List<String>> entry : mapaClientes.entrySet()) {
+			textAreaServidor.append(entry.getKey()+" : "+entry.getValue()+"/n");
+		}
+		//System.out.println(Arrays.asList(mapaClientes));
 		
 	}
 
