@@ -13,7 +13,6 @@ public class Arquivo implements Serializable{
 	private static final long serialVersionUID = 552916715788232463L;
 
 	private long id;
-
 	private String path;
 	private String nome;
 	private String extensao;

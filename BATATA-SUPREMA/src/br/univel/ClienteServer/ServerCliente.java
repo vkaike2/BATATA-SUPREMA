@@ -8,6 +8,9 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +34,11 @@ import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.lang.reflect.Array;
 import java.awt.event.ActionEvent;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 public class ServerCliente extends JFrame implements IServer {
 
@@ -46,6 +53,13 @@ public class ServerCliente extends JFrame implements IServer {
 	private JButton btnDesconectar;
 	private IServer servico,servicoCliente;
 	private Registry registry,registryCliente;
+	private List<Arquivo> listaArquivos = new ArrayList<>();
+	private Map<Cliente, List<Arquivo>> mapaClientes = new HashMap<>();
+	private JScrollPane scrollPaneServidor;
+	private JTextArea textAreaServidor;
+	private JLabel lblLogViwer;
+	private Cliente cliente;
+	
 
 	/**
 	 * Launch the application.
@@ -77,7 +91,7 @@ public class ServerCliente extends JFrame implements IServer {
 		gbl_contentPane.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_contentPane.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_contentPane.columnWeights = new double[]{0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
-		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_contentPane.rowWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		contentPane.setLayout(gbl_contentPane);
 		
 		JLabel lblPorta = new JLabel("Porta:");
@@ -138,6 +152,26 @@ public class ServerCliente extends JFrame implements IServer {
 		gbc_btnFecharServidor.gridy = 1;
 		contentPane.add(btnFecharServidor, gbc_btnFecharServidor);
 		
+		lblLogViwer = new JLabel("Log Viwer");
+		GridBagConstraints gbc_lblLogViwer = new GridBagConstraints();
+		gbc_lblLogViwer.insets = new Insets(0, 0, 5, 5);
+		gbc_lblLogViwer.gridx = 0;
+		gbc_lblLogViwer.gridy = 2;
+		contentPane.add(lblLogViwer, gbc_lblLogViwer);
+		
+		scrollPaneServidor = new JScrollPane();
+		GridBagConstraints gbc_scrollPaneServidor = new GridBagConstraints();
+		gbc_scrollPaneServidor.gridwidth = 3;
+		gbc_scrollPaneServidor.gridheight = 4;
+		gbc_scrollPaneServidor.insets = new Insets(0, 0, 5, 5);
+		gbc_scrollPaneServidor.fill = GridBagConstraints.BOTH;
+		gbc_scrollPaneServidor.gridx = 0;
+		gbc_scrollPaneServidor.gridy = 3;
+		contentPane.add(scrollPaneServidor, gbc_scrollPaneServidor);
+		
+		textAreaServidor = new JTextArea();
+		scrollPaneServidor.setViewportView(textAreaServidor);
+		
 		JLabel lblPortaCliente = new JLabel("Porta:");
 		GridBagConstraints gbc_lblPortaCliente = new GridBagConstraints();
 		gbc_lblPortaCliente.anchor = GridBagConstraints.EAST;
@@ -159,6 +193,12 @@ public class ServerCliente extends JFrame implements IServer {
 		btnConectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				conectarCliente();
+				try {
+					registrarCliente(cliente);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 		GridBagConstraints gbc_btnConectar = new GridBagConstraints();
@@ -199,9 +239,11 @@ public class ServerCliente extends JFrame implements IServer {
 		
 		textFieldIPServidor.setEditable(false);
 		btnFecharServidor.setEnabled(false);
+		textAreaServidor.setEditable(false);
 		
 		textFieldIPServidor.setText(mostrarIP());
 		textFieldPortaServidor.setText("1818");
+		
 		
 //coisas do Cliente
 		
@@ -252,7 +294,7 @@ public class ServerCliente extends JFrame implements IServer {
 		    UnicastRemoteObject.unexportObject(this, true);
 			
 			JOptionPane.showMessageDialog(this, "O servidor foi encerrado");
-			
+			                                                                                     
 			textFieldPortaServidor.setEditable(true);
 			btnAbrirServidor.setEnabled(true);
 			btnFecharServidor.setEnabled(false);
@@ -301,6 +343,7 @@ public class ServerCliente extends JFrame implements IServer {
 			
 			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
 			
+			
 			btnConectar.setEnabled(false);
 			btnDesconectar.setEnabled(true);
 			textFieldIpCliente.setEditable(false);
@@ -334,6 +377,22 @@ public class ServerCliente extends JFrame implements IServer {
 	@Override
 	public void registrarCliente(Cliente c) throws RemoteException {
 		// TODO Auto-generated method stub
+		
+		Arquivo arq = new Arquivo();
+		
+		File dirStart = new File(".\\");
+		
+		for (File file : dirStart.listFiles()) {
+			if (file.isFile()) {
+				arq.setNome(file.getName());
+				arq.setTamanho(file.length());
+				listaArquivos.add(arq);
+			}
+		}
+		
+		mapaClientes.put(c, listaArquivos);
+		
+		System.out.println(Arrays.asList(mapaClientes));
 		
 	}
 
