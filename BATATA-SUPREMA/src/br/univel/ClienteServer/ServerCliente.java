@@ -108,7 +108,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[] { 0, 0, 114, 44, 0, 92, 87, 86, 0, 0 };
+		gbl_contentPane.columnWidths = new int[] { 0, 0, 114, 44, 0, 92, 111, 86, 0, 0 };
 		gbl_contentPane.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		gbl_contentPane.columnWeights = new double[] { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, Double.MIN_VALUE };
 		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
@@ -239,7 +239,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_btnDesconectar.gridy = 1;
 		contentPane.add(btnDesconectar, gbc_btnDesconectar);
 
-		btnDesconectar.setEnabled(false);
+		
 
 		lblLogEntradas = new JLabel("Usuários Conectados:");
 		GridBagConstraints gbc_lblLogEntradas = new GridBagConstraints();
@@ -279,7 +279,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnFiltrar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-					
+					textAreaCliente.append(comboBoxFiltro.getSelectedItem()+"\n");
 					//procurarArquivo(textFieldFiltro.getText(), tf,"NOME");
 					
 			}
@@ -360,6 +360,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		textFieldIPServidor.setEditable(false);
 		btnFecharServidor.setEnabled(false);
+		
+		
 		textAreaServidor.setEditable(false);
 		textAreaLogArquivos.setEditable(false);
 
@@ -368,8 +370,15 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		
 		// coisas do Cliente
 
+		btnFiltrar.setEnabled(false);
+		btnDesconectar.setEnabled(false);
+		btnDownload.setEnabled(false);
+		
+		comboBoxFiltro.setEnabled(false);
+		
 		textFieldIpCliente.setText("192.168");
-
+		textFieldArquivo.setEnabled(false);
+		textFieldFiltro.setEnabled(false);
 		textAreaCliente.setEditable(false);
 		
 
@@ -475,6 +484,11 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			registrarCliente(cliente);
 			publicarListaArquivos(cliente, listaArquivos);
 
+			btnFiltrar.setEnabled(true);
+			btnDownload.setEnabled(true);
+			textFieldArquivo.setEnabled(true);
+			textFieldFiltro.setEnabled(true);
+			comboBoxFiltro.setEnabled(true);
 			btnConectar.setEnabled(false);
 			btnDesconectar.setEnabled(true);
 			textFieldIpCliente.setEditable(false);
@@ -497,7 +511,12 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			}
 
 			JOptionPane.showMessageDialog(this, "Você se desconectou do servidor");
-
+			
+			btnFiltrar.setEnabled(false);
+			btnDownload.setEnabled(false);
+			textFieldArquivo.setEnabled(false);
+			textFieldFiltro.setEnabled(false);
+			comboBoxFiltro.setEnabled(false);
 			btnConectar.setEnabled(true);
 			btnDesconectar.setEnabled(false);
 			textFieldIpCliente.setEditable(true);
