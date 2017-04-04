@@ -81,6 +81,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JTextField textFieldArquivo;
 	private JButton btnDownload;
 	private int iPorta;
+	private Map<Cliente, List<Arquivo>> mapaFiltro = new HashMap<>();
 
 	/**
 	 * Launch the application.
@@ -170,8 +171,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				conectarCliente();
 
 				try {
-					registrarCliente(cliente);
-					publicarListaArquivos(cliente, listaArquivos);
+					servicoCliente.registrarCliente(cliente);
+					servicoCliente.publicarListaArquivos(cliente, listaArquivos);
 				} catch (RemoteException e) {
 
 					// TODO Auto-generated catch block
@@ -289,7 +290,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			public void actionPerformed(ActionEvent arg0) {
 
 				// textAreaCliente.append(String.valueOf(comboBoxFiltro.getSelectedItem()));
-
+				
 			}
 		});
 		GridBagConstraints gbc_btnFiltrar = new GridBagConstraints();
@@ -377,7 +378,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		// coisas do Cliente
 
-		cliente.setNome("kaike");
+		cliente.setNome("paulo");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -483,7 +484,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			registryCliente = LocateRegistry.getRegistry(sIp, iPorta);
 			servicoCliente = (IServer) registryCliente.lookup(IServer.NOME_SERVICO);
 
-			//cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
+			// cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
 
 			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
 
@@ -582,17 +583,20 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String query, TipoFiltro tipoFiltro, String filtro)
 			throws RemoteException {
-		// List<String> resultado = new ArrayList<>();
 
 		Pattern pat = Pattern.compile(".*" + query + ".*");
-
+		List<Arquivo> listivo = new ArrayList<>();
 		for (Arquivo arquivo : listaArquivos) {
 
 			Matcher m = pat.matcher(arquivo.getNome().toLowerCase());
 
+			if (m.matches()) {
+				listivo.add(arquivo);
+				 mapaFiltro.put(cliente,listivo);
+			}
 		}
 
-		return null;
+		return mapaFiltro;
 
 	}
 
