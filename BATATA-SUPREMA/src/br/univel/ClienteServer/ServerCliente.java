@@ -80,6 +80,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JLabel lblArquivo;
 	private JTextField textFieldArquivo;
 	private JButton btnDownload;
+	private int iPorta;
 
 	/**
 	 * Launch the application.
@@ -166,7 +167,16 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		btnConectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				run();
+				conectarCliente();
+
+				try {
+					registrarCliente(cliente);
+					publicarListaArquivos(cliente, listaArquivos);
+				} catch (RemoteException e) {
+
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
 
@@ -197,7 +207,9 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnFecharServidor = new JButton("Fechar Servidor");
 		btnFecharServidor.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+
 				fecharServidor();
+
 			}
 		});
 		GridBagConstraints gbc_btnFecharServidor = new GridBagConstraints();
@@ -225,7 +237,6 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		contentPane.add(textFieldIpCliente, gbc_textFieldIpCliente);
 		textFieldIpCliente.setColumns(10);
 
-	
 		btnDesconectar = new JButton("Desconectar");
 		btnDesconectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -238,8 +249,6 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_btnDesconectar.gridx = 7;
 		gbc_btnDesconectar.gridy = 1;
 		contentPane.add(btnDesconectar, gbc_btnDesconectar);
-
-		
 
 		lblLogEntradas = new JLabel("Usuários Conectados:");
 		GridBagConstraints gbc_lblLogEntradas = new GridBagConstraints();
@@ -256,7 +265,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_lblArquivos.gridx = 2;
 		gbc_lblArquivos.gridy = 2;
 		contentPane.add(lblArquivos, gbc_lblArquivos);
-		
+
 		comboBoxFiltro = new JComboBox();
 		comboBoxFiltro.setModel(new DefaultComboBoxModel(TipoFiltro.values()));
 		GridBagConstraints gbc_comboBoxFiltro = new GridBagConstraints();
@@ -264,7 +273,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_comboBoxFiltro.gridx = 5;
 		gbc_comboBoxFiltro.gridy = 2;
 		contentPane.add(comboBoxFiltro, gbc_comboBoxFiltro);
-		
+
 		textFieldFiltro = new JTextField();
 		GridBagConstraints gbc_textFieldFiltro = new GridBagConstraints();
 		gbc_textFieldFiltro.gridwidth = 2;
@@ -274,21 +283,13 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_textFieldFiltro.gridy = 2;
 		contentPane.add(textFieldFiltro, gbc_textFieldFiltro);
 		textFieldFiltro.setColumns(10);
-		
+
 		btnFiltrar = new JButton("Filtrar");
 		btnFiltrar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				
-					//textAreaCliente.append(String.valueOf(comboBoxFiltro.getSelectedItem()));
-					
-					try {
-						procurarArquivo(textFieldFiltro.getText(), tf,String.valueOf(comboBoxFiltro.getSelectedItem()));
-					} catch (RemoteException e) {
-						// TODO Auto-generated catch block
-						JOptionPane.showMessageDialog(null, "Erro ao filtrar");
-						e.printStackTrace();
-					}
-					
+
+				// textAreaCliente.append(String.valueOf(comboBoxFiltro.getSelectedItem()));
+
 			}
 		});
 		GridBagConstraints gbc_btnFiltrar = new GridBagConstraints();
@@ -324,7 +325,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		textAreaLogArquivos = new JTextArea();
 		scrollPaneLogArquivos.setViewportView(textAreaLogArquivos);
-		
+
 		scrollPaneCliente = new JScrollPane();
 		GridBagConstraints gbc_scrollPaneCliente = new GridBagConstraints();
 		gbc_scrollPaneCliente.gridwidth = 4;
@@ -334,10 +335,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_scrollPaneCliente.gridx = 5;
 		gbc_scrollPaneCliente.gridy = 3;
 		contentPane.add(scrollPaneCliente, gbc_scrollPaneCliente);
-		
+
 		textAreaCliente = new JTextArea();
 		scrollPaneCliente.setViewportView(textAreaCliente);
-		
+
 		lblArquivo = new JLabel("Arquivo: ");
 		GridBagConstraints gbc_lblArquivo = new GridBagConstraints();
 		gbc_lblArquivo.anchor = GridBagConstraints.EAST;
@@ -346,7 +347,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_lblArquivo.gridx = 5;
 		gbc_lblArquivo.gridy = 8;
 		contentPane.add(lblArquivo, gbc_lblArquivo);
-		
+
 		textFieldArquivo = new JTextField();
 		GridBagConstraints gbc_textFieldArquivo = new GridBagConstraints();
 		gbc_textFieldArquivo.gridwidth = 2;
@@ -356,38 +357,40 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_textFieldArquivo.gridy = 8;
 		contentPane.add(textFieldArquivo, gbc_textFieldArquivo);
 		textFieldArquivo.setColumns(10);
-		
+
 		btnDownload = new JButton("Download");
 		GridBagConstraints gbc_btnDownload = new GridBagConstraints();
 		gbc_btnDownload.gridx = 8;
 		gbc_btnDownload.gridy = 8;
 		contentPane.add(btnDownload, gbc_btnDownload);
-		
+
 		// coisas do Servidor
 
 		textFieldIPServidor.setEditable(false);
 		btnFecharServidor.setEnabled(false);
-		
-		
+
 		textAreaServidor.setEditable(false);
 		textAreaLogArquivos.setEditable(false);
 
 		textFieldIPServidor.setText(mostrarIP());
 		textFieldPortaServidor.setText("1818");
-		
+
 		// coisas do Cliente
+
+		cliente.setNome("kaike");
+		cliente.setIp(mostrarIP());
+		cliente.setPorta(iPorta);
 
 		btnFiltrar.setEnabled(false);
 		btnDesconectar.setEnabled(false);
 		btnDownload.setEnabled(false);
-		
+
 		comboBoxFiltro.setEnabled(false);
-		
+
 		textFieldIpCliente.setText("192.168");
 		textFieldArquivo.setEnabled(false);
 		textFieldFiltro.setEnabled(false);
 		textAreaCliente.setEditable(false);
-		
 
 	}
 
@@ -470,7 +473,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			JOptionPane.showMessageDialog(this, "O campo porta precisa conter algum numero");
 		}
 
-		int iPorta = Integer.parseInt(sPorta);
+		iPorta = Integer.parseInt(sPorta);
 		if (iPorta < 1024 || iPorta > 65535) {
 			JOptionPane.showMessageDialog(this, "A porta deve estar entre 1024 e 65535");
 			return;
@@ -480,16 +483,9 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			registryCliente = LocateRegistry.getRegistry(sIp, iPorta);
 			servicoCliente = (IServer) registryCliente.lookup(IServer.NOME_SERVICO);
 
-			// cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
-
-			cliente.setNome("kaike");
-			cliente.setIp(mostrarIP());
-			cliente.setPorta(iPorta);
+			//cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
 
 			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
-
-			registrarCliente(cliente);
-			publicarListaArquivos(cliente, listaArquivos);
 
 			btnFiltrar.setEnabled(true);
 			btnDownload.setEnabled(true);
@@ -518,7 +514,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			}
 
 			JOptionPane.showMessageDialog(this, "Você se desconectou do servidor");
-			
+
 			btnFiltrar.setEnabled(false);
 			btnDownload.setEnabled(false);
 			textFieldArquivo.setEnabled(false);
@@ -586,28 +582,18 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String query, TipoFiltro tipoFiltro, String filtro)
 			throws RemoteException {
-		
-		//String NomesArquivos;
-		List<String> resultado = new ArrayList<>();
-		
+		// List<String> resultado = new ArrayList<>();
+
 		Pattern pat = Pattern.compile(".*" + query + ".*");
-		
-		if(filtro.equals(tipoFiltro.NOME)){
-			for (Arquivo arquivo : listaArquivos) {
-				Matcher m = pat.matcher(arquivo.getNome().toLowerCase());
-				if(m.matches()){
-					
-					resultado.add(arquivo.getNome());
-				}
-			}
-			
-		}
-		
-		for (String res : resultado) {
-			textAreaCliente.append(res);;
+
+		for (Arquivo arquivo : listaArquivos) {
+
+			Matcher m = pat.matcher(arquivo.getNome().toLowerCase());
+
 		}
 
-		return mapaClientes;
+		return null;
+
 	}
 
 	@Override
@@ -619,7 +605,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		conectarCliente();
+
 	}
 
 }

@@ -16,6 +16,7 @@ public class TestandoHashMap {
 	
 	public void inserirDados(){
 		mapTeste.put("a", 1);
+		mapTeste.put("a", 2);
 		mapTeste.put("b", 2);
 		mapTeste.put("c", 3);
 		mapTeste.put("d", 4);
