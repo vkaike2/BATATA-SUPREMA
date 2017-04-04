@@ -63,6 +63,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private Registry registry, registryCliente;
 	private Arquivo arq = new Arquivo();
 	private List<Arquivo> listaArquivos = new ArrayList<>();
+	private List<Cliente> listaClientes = new ArrayList<>();
 	private Cliente cliente = new Cliente();
 	private TipoFiltro tf;
 	private Map<Cliente, List<Arquivo>> mapaClientes = new HashMap<>();
@@ -80,8 +81,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JLabel lblArquivo;
 	private JTextField textFieldArquivo;
 	private JButton btnDownload;
+
 	private int iPorta;
-	private Map<Cliente, List<Arquivo>> mapaFiltro = new HashMap<>();
 
 	/**
 	 * Launch the application.
@@ -288,9 +289,35 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnFiltrar = new JButton("Filtrar");
 		btnFiltrar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				/*
+				 * 
+				 * 
+				 * try { mapFiltro.putAll(servicoCliente.procurarArquivo(
+				 * textFieldFiltro.getText(), tf,
+				 * String.valueOf(comboBoxFiltro.getSelectedItem()))); for
+				 * (Entry<Cliente, List<Arquivo>> entry : mapFiltro.entrySet())
+				 * {
+				 * textAreaCliente.append(entry.getKey()+" : "+entry.getValue())
+				 * ; textAreaCliente.append("1"); } } catch (RemoteException e)
+				 * { // TODO Auto-generated catch block e.printStackTrace(); }
+				 * 
+				 */
+				Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
+				try {
+					retorno.putAll(servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
+							String.valueOf(comboBoxFiltro.getSelectedItem())));
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
+					System.out.println(entry.getKey() + " : " + entry.getValue());
+
+				}
 
 				// textAreaCliente.append(String.valueOf(comboBoxFiltro.getSelectedItem()));
-				
+
 			}
 		});
 		GridBagConstraints gbc_btnFiltrar = new GridBagConstraints();
@@ -377,8 +404,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		textFieldPortaServidor.setText("1818");
 
 		// coisas do Cliente
-
-		cliente.setNome("paulo");
+		String username = System.getProperty("user.name"); 
+		cliente.setNome(username);
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -535,8 +562,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public void registrarCliente(Cliente c) throws RemoteException {
 		// TODO Auto-generated method stub
-
-		mapaClientes.put(c, listaArquivos);
+		listaClientes.add(c);
 
 		textAreaServidor.append(c.getNome() + " se conectou.\n");
 
@@ -544,19 +570,16 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 	@Override
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
+
+		// listaGeralComTodosOsArquivosEClientes.put(c, lista);
+		mapaClientes.put(c, lista);
 		// TODO Auto-generated method stub
 
 		File dirStart = new File(".\\");
-		/*
-		 * for (File file : dirStart.listFiles()) { if (file.isFile()) {
-		 * arq.setNome(file.getName()); lista.add(arq); //
-		 * arq.setTamanho(file.length());
-		 * 
-		 * } }
-		 */
 
 		for (File file : dirStart.listFiles()) {
 			if (file.isFile()) {
+
 				Arquivo arq = new Arquivo();
 				arq.setNome(file.getName());
 				arq.setTamanho(file.length());
@@ -583,20 +606,46 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String query, TipoFiltro tipoFiltro, String filtro)
 			throws RemoteException {
-
+		List<Arquivo> ListaArquivoFiltrado = new ArrayList<>();
+		Map<Cliente,List<Arquivo>> mapaFiltrado = new HashMap<>();
+		
 		Pattern pat = Pattern.compile(".*" + query + ".*");
-		List<Arquivo> listivo = new ArrayList<>();
-		for (Arquivo arquivo : listaArquivos) {
-
-			Matcher m = pat.matcher(arquivo.getNome().toLowerCase());
-
-			if (m.matches()) {
-				listivo.add(arquivo);
-				 mapaFiltro.put(cliente,listivo);
+		
+		if (filtro.equals(tipoFiltro.NOME)) {
+			
+			
+		
+			for (Entry<Cliente, List<Arquivo>> entry : mapaClientes.entrySet()) {
+				//System.out.println(entry.getKey()+" : "+entry.getValue());
+				
+				
+				for (int i = 0; i < entry.getValue().size(); i++) {
+					
+					String nomeArquivo = String.valueOf(entry.getValue().get(i));
+					
+					Matcher m = pat.matcher(nomeArquivo.toLowerCase());
+					
+					if (m.matches()) {
+						ListaArquivoFiltrado.add(entry.getValue().get(i));
+					}
+					mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
+				}
+				
+	
 			}
+			
+			
+			
+			
+			for (Arquivo arq : listaArquivos) {
+				//Matcher m = pat.matcher(arq.getNome().toLowerCase());
+				
+				
+			}
+			
+			
 		}
-
-		return mapaFiltro;
+		return mapaFiltrado;
 
 	}
 
