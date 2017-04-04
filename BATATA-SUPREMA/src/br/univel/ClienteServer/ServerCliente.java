@@ -621,7 +621,9 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				
 				for (int i = 0; i < entry.getValue().size(); i++) {
 					
-					String nomeArquivo = String.valueOf(entry.getValue().get(i));
+					Arquivo arq = entry.getValue().get(i);
+					
+					String nomeArquivo = arq.getNome();
 					
 					Matcher m = pat.matcher(nomeArquivo.toLowerCase());
 					
