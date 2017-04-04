@@ -11,9 +11,12 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -23,6 +26,7 @@ import br.univel.comum.Cliente;
 import br.univel.comum.IServer;
 import br.univel.comum.TipoFiltro;
 import br.univel.comum.ArquivoDiretorio.Arquivo;
+
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -65,6 +69,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JScrollPane scrollPaneLogArquivos;
 	private JTextArea textAreaLogArquivos;
 	private JLabel lblArquivos;
+	private JButton btnNewButton;
 
 	/**
 	 * Launch the application.
@@ -88,15 +93,15 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	 */
 	public ServerCliente() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 771, 300);
+		setBounds(100, 100, 642, 312);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_contentPane.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		gbl_contentPane.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		gbl_contentPane.columnWeights = new double[] { 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE };
-		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_contentPane.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		contentPane.setLayout(gbl_contentPane);
 
 		JLabel lblPorta = new JLabel("Porta:");
@@ -148,16 +153,16 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		textFieldPortaCliente.setText("1818");
 
 		btnConectar = new JButton("Conectar");
+
 		btnConectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-
 				run();
-
 			}
 		});
+
 		GridBagConstraints gbc_btnConectar = new GridBagConstraints();
 		gbc_btnConectar.fill = GridBagConstraints.BOTH;
-		gbc_btnConectar.insets = new Insets(0, 0, 5, 0);
+		gbc_btnConectar.insets = new Insets(0, 0, 5, 5);
 		gbc_btnConectar.gridx = 7;
 		gbc_btnConectar.gridy = 0;
 		contentPane.add(btnConectar, gbc_btnConectar);
@@ -222,7 +227,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		});
 		GridBagConstraints gbc_btnDesconectar = new GridBagConstraints();
 		gbc_btnDesconectar.fill = GridBagConstraints.BOTH;
-		gbc_btnDesconectar.insets = new Insets(0, 0, 5, 0);
+		gbc_btnDesconectar.insets = new Insets(0, 0, 5, 5);
 		gbc_btnDesconectar.gridx = 7;
 		gbc_btnDesconectar.gridy = 1;
 		contentPane.add(btnDesconectar, gbc_btnDesconectar);
@@ -248,8 +253,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		scrollPaneServidor = new JScrollPane();
 		GridBagConstraints gbc_scrollPaneServidor = new GridBagConstraints();
 		gbc_scrollPaneServidor.gridwidth = 2;
-		gbc_scrollPaneServidor.gridheight = 4;
-		gbc_scrollPaneServidor.insets = new Insets(0, 0, 5, 5);
+		gbc_scrollPaneServidor.gridheight = 6;
+		gbc_scrollPaneServidor.insets = new Insets(0, 0, 0, 5);
 		gbc_scrollPaneServidor.fill = GridBagConstraints.BOTH;
 		gbc_scrollPaneServidor.gridx = 0;
 		gbc_scrollPaneServidor.gridy = 3;
@@ -261,17 +266,17 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		scrollPaneLogArquivos = new JScrollPane();
 		GridBagConstraints gbc_scrollPaneLogArquivos = new GridBagConstraints();
 		gbc_scrollPaneLogArquivos.gridwidth = 2;
-		gbc_scrollPaneLogArquivos.gridheight = 4;
-		gbc_scrollPaneLogArquivos.insets = new Insets(0, 0, 5, 5);
+		gbc_scrollPaneLogArquivos.gridheight = 6;
+		gbc_scrollPaneLogArquivos.insets = new Insets(0, 0, 0, 5);
 		gbc_scrollPaneLogArquivos.fill = GridBagConstraints.BOTH;
 		gbc_scrollPaneLogArquivos.gridx = 2;
 		gbc_scrollPaneLogArquivos.gridy = 3;
-		
+
 		contentPane.add(scrollPaneLogArquivos, gbc_scrollPaneLogArquivos);
 
 		textAreaLogArquivos = new JTextArea();
 		scrollPaneLogArquivos.setViewportView(textAreaLogArquivos);
-		
+
 		// coisas do Servidor
 
 		textFieldIPServidor.setEditable(false);
@@ -281,8 +286,14 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		textFieldIPServidor.setText(mostrarIP());
 		textFieldPortaServidor.setText("1818");
-
 		
+		btnNewButton = new JButton("New button");
+		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
+		gbc_btnNewButton.insets = new Insets(0, 0, 5, 0);
+		gbc_btnNewButton.gridx = 8;
+		gbc_btnNewButton.gridy = 3;
+		contentPane.add(btnNewButton, gbc_btnNewButton);
+
 	}
 
 	public void abrirServidor() {
@@ -325,7 +336,6 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			UnicastRemoteObject.unexportObject(registry, true);
 			UnicastRemoteObject.unexportObject(this, true);
 
-			
 			JOptionPane.showMessageDialog(this, "O servidor foi encerrado");
 
 			textFieldPortaServidor.setEditable(true);
@@ -435,27 +445,23 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
 		// TODO Auto-generated method stub
 
-
 		File dirStart = new File(".\\");
-/*
- 	for (File file : dirStart.listFiles()) {
-			if (file.isFile()) {
-				arq.setNome(file.getName());
-				lista.add(arq);
-				// arq.setTamanho(file.length());
-				
-			}
-		}	
- */
-		
-		
+		/*
+		 * for (File file : dirStart.listFiles()) { if (file.isFile()) {
+		 * arq.setNome(file.getName()); lista.add(arq); //
+		 * arq.setTamanho(file.length());
+		 * 
+		 * } }
+		 */
+
 		for (File file : dirStart.listFiles()) {
 			if (file.isFile()) {
 				Arquivo arq = new Arquivo();
 				arq.setNome(file.getName());
 				arq.setTamanho(file.length());
+
 				lista.add(arq);
-			} 
+			}
 		}
 
 		textAreaLogArquivos.append("Arquivos de " + c.getNome() + ":\n");
@@ -476,6 +482,32 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String query, TipoFiltro tipoFiltro, String filtro)
 			throws RemoteException {
+		//String NomesArquivos;
+		List<String> resultado = new ArrayList<>();
+		Pattern pat = Pattern.compile(".*" + query + ".*");
+		
+		if(filtro.equals(tipoFiltro.NOME)){
+			for (Arquivo arquivo : listaArquivos) {
+				Matcher m = pat.matcher(arquivo.getNome().toLowerCase());
+				if(m.matches()){
+					resultado.add(arquivo.getNome());
+				}
+			}
+			
+		}
+		
+		for (String res : resultado) {
+			System.out.println(res);
+		}
+		/*
+		 * for (String nome : Lista.DADOS) {
+		 * 
+		 * Matcher m = pat.matcher(nome.toLowerCase());
+		 *  if (m.matches()) {
+		 * resultado.add(nome); } }
+		 * 
+		 */
+
 		// TODO Auto-generated method stub
 
 		return null;
