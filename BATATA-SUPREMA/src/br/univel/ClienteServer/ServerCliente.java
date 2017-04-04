@@ -45,6 +45,8 @@ import java.lang.reflect.Array;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
 
 public class ServerCliente extends JFrame implements IServer, Runnable {
 
@@ -62,6 +64,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private Arquivo arq = new Arquivo();
 	private List<Arquivo> listaArquivos = new ArrayList<>();
 	private Cliente cliente = new Cliente();
+	private TipoFiltro tf;
 	private Map<Cliente, List<Arquivo>> mapaClientes = new HashMap<>();
 	private JScrollPane scrollPaneServidor;
 	private JTextArea textAreaServidor;
@@ -69,7 +72,14 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JScrollPane scrollPaneLogArquivos;
 	private JTextArea textAreaLogArquivos;
 	private JLabel lblArquivos;
-	private JButton btnNewButton;
+	private JButton btnFiltrar;
+	private JComboBox comboBoxFiltro;
+	private JTextField textFieldFiltro;
+	private JScrollPane scrollPaneCliente;
+	private JTextArea textAreaCliente;
+	private JLabel lblArquivo;
+	private JTextField textFieldArquivo;
+	private JButton btnDownload;
 
 	/**
 	 * Launch the application.
@@ -93,15 +103,15 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	 */
 	public ServerCliente() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 642, 312);
+		setBounds(100, 100, 734, 330);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		gbl_contentPane.columnWidths = new int[] { 0, 0, 114, 44, 0, 92, 87, 86, 0, 0 };
 		gbl_contentPane.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		gbl_contentPane.columnWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
-		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
+		gbl_contentPane.columnWeights = new double[] { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, Double.MIN_VALUE };
+		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		contentPane.setLayout(gbl_contentPane);
 
 		JLabel lblPorta = new JLabel("Porta:");
@@ -215,10 +225,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		contentPane.add(textFieldIpCliente, gbc_textFieldIpCliente);
 		textFieldIpCliente.setColumns(10);
 
-		// coisas do Cliente
-
-		textFieldIpCliente.setText("192.168");
-
+	
 		btnDesconectar = new JButton("Desconectar");
 		btnDesconectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -249,6 +256,40 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_lblArquivos.gridx = 2;
 		gbc_lblArquivos.gridy = 2;
 		contentPane.add(lblArquivos, gbc_lblArquivos);
+		
+		comboBoxFiltro = new JComboBox();
+		comboBoxFiltro.setModel(new DefaultComboBoxModel(TipoFiltro.values()));
+		GridBagConstraints gbc_comboBoxFiltro = new GridBagConstraints();
+		gbc_comboBoxFiltro.insets = new Insets(0, 0, 5, 5);
+		gbc_comboBoxFiltro.gridx = 5;
+		gbc_comboBoxFiltro.gridy = 2;
+		contentPane.add(comboBoxFiltro, gbc_comboBoxFiltro);
+		
+		textFieldFiltro = new JTextField();
+		GridBagConstraints gbc_textFieldFiltro = new GridBagConstraints();
+		gbc_textFieldFiltro.gridwidth = 2;
+		gbc_textFieldFiltro.insets = new Insets(0, 0, 5, 5);
+		gbc_textFieldFiltro.fill = GridBagConstraints.BOTH;
+		gbc_textFieldFiltro.gridx = 6;
+		gbc_textFieldFiltro.gridy = 2;
+		contentPane.add(textFieldFiltro, gbc_textFieldFiltro);
+		textFieldFiltro.setColumns(10);
+		
+		btnFiltrar = new JButton("Filtrar");
+		btnFiltrar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				
+					
+					//procurarArquivo(textFieldFiltro.getText(), tf,"NOME");
+					
+			}
+		});
+		GridBagConstraints gbc_btnFiltrar = new GridBagConstraints();
+		gbc_btnFiltrar.fill = GridBagConstraints.BOTH;
+		gbc_btnFiltrar.insets = new Insets(0, 0, 5, 0);
+		gbc_btnFiltrar.gridx = 8;
+		gbc_btnFiltrar.gridy = 2;
+		contentPane.add(btnFiltrar, gbc_btnFiltrar);
 
 		scrollPaneServidor = new JScrollPane();
 		GridBagConstraints gbc_scrollPaneServidor = new GridBagConstraints();
@@ -265,7 +306,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		scrollPaneLogArquivos = new JScrollPane();
 		GridBagConstraints gbc_scrollPaneLogArquivos = new GridBagConstraints();
-		gbc_scrollPaneLogArquivos.gridwidth = 2;
+		gbc_scrollPaneLogArquivos.gridwidth = 3;
 		gbc_scrollPaneLogArquivos.gridheight = 6;
 		gbc_scrollPaneLogArquivos.insets = new Insets(0, 0, 0, 5);
 		gbc_scrollPaneLogArquivos.fill = GridBagConstraints.BOTH;
@@ -276,7 +317,45 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		textAreaLogArquivos = new JTextArea();
 		scrollPaneLogArquivos.setViewportView(textAreaLogArquivos);
-
+		
+		scrollPaneCliente = new JScrollPane();
+		GridBagConstraints gbc_scrollPaneCliente = new GridBagConstraints();
+		gbc_scrollPaneCliente.gridwidth = 4;
+		gbc_scrollPaneCliente.gridheight = 5;
+		gbc_scrollPaneCliente.insets = new Insets(0, 0, 5, 5);
+		gbc_scrollPaneCliente.fill = GridBagConstraints.BOTH;
+		gbc_scrollPaneCliente.gridx = 5;
+		gbc_scrollPaneCliente.gridy = 3;
+		contentPane.add(scrollPaneCliente, gbc_scrollPaneCliente);
+		
+		textAreaCliente = new JTextArea();
+		scrollPaneCliente.setViewportView(textAreaCliente);
+		
+		lblArquivo = new JLabel("Arquivo: ");
+		GridBagConstraints gbc_lblArquivo = new GridBagConstraints();
+		gbc_lblArquivo.anchor = GridBagConstraints.EAST;
+		gbc_lblArquivo.fill = GridBagConstraints.VERTICAL;
+		gbc_lblArquivo.insets = new Insets(0, 0, 0, 5);
+		gbc_lblArquivo.gridx = 5;
+		gbc_lblArquivo.gridy = 8;
+		contentPane.add(lblArquivo, gbc_lblArquivo);
+		
+		textFieldArquivo = new JTextField();
+		GridBagConstraints gbc_textFieldArquivo = new GridBagConstraints();
+		gbc_textFieldArquivo.gridwidth = 2;
+		gbc_textFieldArquivo.insets = new Insets(0, 0, 0, 5);
+		gbc_textFieldArquivo.fill = GridBagConstraints.BOTH;
+		gbc_textFieldArquivo.gridx = 6;
+		gbc_textFieldArquivo.gridy = 8;
+		contentPane.add(textFieldArquivo, gbc_textFieldArquivo);
+		textFieldArquivo.setColumns(10);
+		
+		btnDownload = new JButton("Download");
+		GridBagConstraints gbc_btnDownload = new GridBagConstraints();
+		gbc_btnDownload.gridx = 8;
+		gbc_btnDownload.gridy = 8;
+		contentPane.add(btnDownload, gbc_btnDownload);
+		
 		// coisas do Servidor
 
 		textFieldIPServidor.setEditable(false);
@@ -287,12 +366,12 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		textFieldIPServidor.setText(mostrarIP());
 		textFieldPortaServidor.setText("1818");
 		
-		btnNewButton = new JButton("New button");
-		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
-		gbc_btnNewButton.insets = new Insets(0, 0, 5, 0);
-		gbc_btnNewButton.gridx = 8;
-		gbc_btnNewButton.gridy = 3;
-		contentPane.add(btnNewButton, gbc_btnNewButton);
+		// coisas do Cliente
+
+		textFieldIpCliente.setText("192.168");
+
+		textAreaCliente.setEditable(false);
+		
 
 	}
 
@@ -388,7 +467,6 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			// cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
 
 			cliente.setNome("kaike");
-			cliente.setId(1);
 			cliente.setIp(mostrarIP());
 			cliente.setPorta(iPorta);
 
@@ -437,7 +515,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		mapaClientes.put(c, listaArquivos);
 
-		textAreaServidor.append("O cliente " + c.getNome() + " entrou no Servidor.\n");
+		textAreaServidor.append(c.getNome() + " se conectou.\n");
 
 	}
 
@@ -464,9 +542,9 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			}
 		}
 
-		textAreaLogArquivos.append("Arquivos de " + c.getNome() + ":\n");
+		textAreaLogArquivos.append(c.getNome() + ":\n");
 		for (Arquivo arq : lista) {
-			textAreaLogArquivos.append("\t" + arq.getNome() + "\n");
+			textAreaLogArquivos.append("   " + arq.getNome() + "\n");
 
 			// System.out.println("\t" + arq.getTamanho() + "\t" +
 			// arq.getNome());
@@ -476,12 +554,13 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	public void desconectar(Cliente c) throws RemoteException {
 		// TODO Auto-generated method stub
 		mapaClientes.remove(c);
-		textAreaServidor.append(cliente.getNome() + " Saiu do Servidor" + "\n");
+		textAreaServidor.append(cliente.getNome() + " se desconectou\n");
 	}
 
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String query, TipoFiltro tipoFiltro, String filtro)
 			throws RemoteException {
+		
 		//String NomesArquivos;
 		List<String> resultado = new ArrayList<>();
 		Pattern pat = Pattern.compile(".*" + query + ".*");
@@ -497,18 +576,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		}
 		
 		for (String res : resultado) {
-			System.out.println(res);
+			textAreaCliente.append(res);;
 		}
-		/*
-		 * for (String nome : Lista.DADOS) {
-		 * 
-		 * Matcher m = pat.matcher(nome.toLowerCase());
-		 *  if (m.matches()) {
-		 * resultado.add(nome); } }
-		 * 
-		 */
-
-		// TODO Auto-generated method stub
 
 		return null;
 	}
