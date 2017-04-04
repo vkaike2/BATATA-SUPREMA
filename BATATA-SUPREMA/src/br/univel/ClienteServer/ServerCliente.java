@@ -156,6 +156,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			}
 		});
 		GridBagConstraints gbc_btnConectar = new GridBagConstraints();
+		gbc_btnConectar.fill = GridBagConstraints.BOTH;
 		gbc_btnConectar.insets = new Insets(0, 0, 5, 0);
 		gbc_btnConectar.gridx = 7;
 		gbc_btnConectar.gridy = 0;
@@ -220,6 +221,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			}
 		});
 		GridBagConstraints gbc_btnDesconectar = new GridBagConstraints();
+		gbc_btnDesconectar.fill = GridBagConstraints.BOTH;
 		gbc_btnDesconectar.insets = new Insets(0, 0, 5, 0);
 		gbc_btnDesconectar.gridx = 7;
 		gbc_btnDesconectar.gridy = 1;
@@ -256,16 +258,6 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		textAreaServidor = new JTextArea();
 		scrollPaneServidor.setViewportView(textAreaServidor);
 
-		// coisas do Servidor
-
-		textFieldIPServidor.setEditable(false);
-		btnFecharServidor.setEnabled(false);
-		textAreaServidor.setEditable(false);
-		//textAreaLogArquivos.setEditable(false);
-
-		textFieldIPServidor.setText(mostrarIP());
-		textFieldPortaServidor.setText("1818");
-
 		scrollPaneLogArquivos = new JScrollPane();
 		GridBagConstraints gbc_scrollPaneLogArquivos = new GridBagConstraints();
 		gbc_scrollPaneLogArquivos.gridwidth = 2;
@@ -274,10 +266,23 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_scrollPaneLogArquivos.fill = GridBagConstraints.BOTH;
 		gbc_scrollPaneLogArquivos.gridx = 2;
 		gbc_scrollPaneLogArquivos.gridy = 3;
+		
 		contentPane.add(scrollPaneLogArquivos, gbc_scrollPaneLogArquivos);
 
 		textAreaLogArquivos = new JTextArea();
 		scrollPaneLogArquivos.setViewportView(textAreaLogArquivos);
+		
+		// coisas do Servidor
+
+		textFieldIPServidor.setEditable(false);
+		btnFecharServidor.setEnabled(false);
+		textAreaServidor.setEditable(false);
+		textAreaLogArquivos.setEditable(false);
+
+		textFieldIPServidor.setText(mostrarIP());
+		textFieldPortaServidor.setText("1818");
+
+		
 	}
 
 	public void abrirServidor() {
@@ -320,6 +325,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			UnicastRemoteObject.unexportObject(registry, true);
 			UnicastRemoteObject.unexportObject(this, true);
 
+			
 			JOptionPane.showMessageDialog(this, "O servidor foi encerrado");
 
 			textFieldPortaServidor.setEditable(true);
@@ -399,6 +405,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				desconectar(cliente);
 				// UnicastRemoteObject.unexportObject(this, true);
 				servicoCliente = null;
+				listaArquivos.clear();
 			}
 
 			JOptionPane.showMessageDialog(this, "Você se desconectou do servidor");
@@ -427,30 +434,37 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
 		// TODO Auto-generated method stub
-		// File dirStart = new File(".\\");
 
-		File dirStart = new File("C:\\Users\\vkcpeixoto\\Desktop\\Share");
-		for (File file : dirStart.listFiles()) {
+
+		File dirStart = new File(".\\");
+/*
+ 	for (File file : dirStart.listFiles()) {
 			if (file.isFile()) {
 				arq.setNome(file.getName());
-				// arq.setTamanho(file.length());
 				lista.add(arq);
+				// arq.setTamanho(file.length());
+				
 			}
+		}	
+ */
+		
+		
+		for (File file : dirStart.listFiles()) {
+			if (file.isFile()) {
+				Arquivo arq = new Arquivo();
+				arq.setNome(file.getName());
+				arq.setTamanho(file.length());
+				lista.add(arq);
+			} 
 		}
 
 		textAreaLogArquivos.append("Arquivos de " + c.getNome() + ":\n");
-
 		for (Arquivo arq : lista) {
 			textAreaLogArquivos.append("\t" + arq.getNome() + "\n");
 
 			// System.out.println("\t" + arq.getTamanho() + "\t" +
 			// arq.getNome());
 		}
-
-		// for (Entry<Cliente, List<Arquivo>> entry : mapaClientes.entrySet()) {
-		// textAreaServidor.append(entry.getKey() + " : " +
-		// entry.getValue()+"\n");
-		// }
 	}
 
 	public void desconectar(Cliente c) throws RemoteException {
