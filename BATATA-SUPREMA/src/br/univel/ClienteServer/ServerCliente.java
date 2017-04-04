@@ -279,8 +279,15 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnFiltrar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-					textAreaCliente.append(comboBoxFiltro.getSelectedItem()+"\n");
-					//procurarArquivo(textFieldFiltro.getText(), tf,"NOME");
+					//textAreaCliente.append(String.valueOf(comboBoxFiltro.getSelectedItem()));
+					
+					try {
+						procurarArquivo(textFieldFiltro.getText(), tf,String.valueOf(comboBoxFiltro.getSelectedItem()));
+					} catch (RemoteException e) {
+						// TODO Auto-generated catch block
+						JOptionPane.showMessageDialog(null, "Erro ao filtrar");
+						e.printStackTrace();
+					}
 					
 			}
 		});
@@ -582,12 +589,14 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		
 		//String NomesArquivos;
 		List<String> resultado = new ArrayList<>();
+		
 		Pattern pat = Pattern.compile(".*" + query + ".*");
 		
 		if(filtro.equals(tipoFiltro.NOME)){
 			for (Arquivo arquivo : listaArquivos) {
 				Matcher m = pat.matcher(arquivo.getNome().toLowerCase());
 				if(m.matches()){
+					
 					resultado.add(arquivo.getNome());
 				}
 			}
@@ -598,7 +607,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			textAreaCliente.append(res);;
 		}
 
-		return null;
+		return mapaClientes;
 	}
 
 	@Override
