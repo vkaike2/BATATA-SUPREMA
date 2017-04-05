@@ -23,7 +23,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-
 import org.omg.PortableInterceptor.ObjectReferenceTemplateSeqHelper;
 
 import br.univel.comum.Cliente;
@@ -40,10 +39,15 @@ import javax.swing.JTextField;
 import java.awt.Insets;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.io.LineNumberInputStream;
 import java.lang.reflect.Array;
 import java.awt.event.ActionEvent;
@@ -91,6 +95,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JComboBox comboBoxClientes;
 	private JComboBox comboBoxArquivos;
 	private String username;
+	private List<Arquivo> listaArquivos = new ArrayList<>();
 
 	/**
 	 * Launch the application.
@@ -119,7 +124,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[] { 0, 0, 114, 44, 0, 92, 111, 116, 0, 0 };
+		gbl_contentPane.columnWidths = new int[] { 0, 0, 145, 44, 0, 92, 111, 116, 0, 0 };
 		gbl_contentPane.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		gbl_contentPane.columnWeights = new double[] { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, Double.MIN_VALUE };
 		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
@@ -185,7 +190,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnConectar.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
-
+				
 			}
 		});
 
@@ -248,7 +253,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
 				if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
-					
+
 					conectarCliente();
 
 				}
@@ -304,10 +309,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		textFieldFiltro.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 					Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
 					TipoFiltro tf = null;
-					
+
 					try {
 						textAreaCliente.setText(null);
 						comboBoxClientes.removeAllItems();
@@ -315,7 +320,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 						retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
 								String.valueOf(comboBoxFiltro.getSelectedItem()));
 
-						// JOptionPane.showMessageDialog(null, "Passou por aqui");
+						// JOptionPane.showMessageDialog(null, "Passou por
+						// aqui");
 						for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
 							Cliente cli = entry.getKey();
 
@@ -351,31 +357,29 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			public void actionPerformed(ActionEvent arg0) {
 				Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
 				TipoFiltro tf = null;
-				
-				
-				
+
 				try {
 					textAreaCliente.setText(null);
 					comboBoxClientes.removeAllItems();
 					comboBoxArquivos.removeAllItems();
 					retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
 							String.valueOf(comboBoxFiltro.getSelectedItem()));
-					
+
 					// JOptionPane.showMessageDialog(null, "Passou por aqui");
 					for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
 						Cliente cli = entry.getKey();
-						
+
 						textAreaCliente.append(cli.getNome() + ": \n");
 						comboBoxClientes.addItem(cli.getNome());
-						
+
 						for (int i = 0; i < entry.getValue().size(); i++) {
 							Arquivo arq = entry.getValue().get(i);
-							
+
 							textAreaCliente.append("  " + arq.getNome() + "  " + arq.getTamanho() + "\n  ");
 							comboBoxArquivos.addItem(arq.getNome());
 						}
 					}
-					
+
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -456,6 +460,40 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		contentPane.add(comboBoxArquivos, gbc_comboBoxArquivos);
 
 		btnDownload = new JButton("Download");
+		btnDownload.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				byte[] dados;
+				
+				TipoFiltro tf = null;
+				try {
+					Map<Cliente, List<Arquivo>> retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
+							String.valueOf(comboBoxFiltro.getSelectedItem()));
+					
+					for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
+						Cliente cli = entry.getKey();
+						if(cli.getNome().equals(String.valueOf(comboBoxClientes.getSelectedItem()))){
+							for (int i = 0; i < entry.getValue().size(); i++) {
+								Arquivo arq = entry.getValue().get(i);
+								if(arq.getNome().equals(String.valueOf(comboBoxArquivos.getSelectedItem()))){
+									dados = servico.baixarArquivo(cli, arq);
+									
+									escreva(new File(String.valueOf(validadorArquivo(String.valueOf(comboBoxArquivos.getSelectedItem())))), dados);
+								}
+								
+							}
+						}
+						
+					}
+				} catch (RemoteException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				
+				
+			}
+		});
 		GridBagConstraints gbc_btnDownload = new GridBagConstraints();
 		gbc_btnDownload.gridx = 8;
 		gbc_btnDownload.gridy = 8;
@@ -569,7 +607,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	}
 
 	public void conectarCliente() {
-		List<Arquivo> listaArquivos = new ArrayList<>();
+		
 
 		String sIp = textFieldIpCliente.getText();
 
@@ -596,9 +634,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
 
+			
+			
 			File dirStart = new File(".\\");// criar um file que sera o
 											// diretorio
-
 			// File dirStart = new File("C:\\Users\\"+username+"\\Desktop");
 			// File dirStart = new File("C:\\Users\\VICTOR\\Desktop\\Share");
 
@@ -805,12 +844,40 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 	@Override
 	public byte[] baixarArquivo(Cliente cli, Arquivo arq) throws RemoteException {
-		// TODO Auto-generated method stub
-
 		
-		return null;
+		byte[] dados = null;
+		// TODO Auto-generated method stub
+		
+		Path path = Paths.get(arq.getPath());
+		try {
+			dados = Files.readAllBytes(path);
+			
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return dados;
+		
 	}
+	public void escreva(File arq, byte[] dados) {
+		try {
+			Files.write(Paths.get(arq.getPath()), dados, StandardOpenOption.CREATE);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 
+	}
+	public String validadorArquivo(String NomeArquivo){
+		
+		String NovoNome = null;
+		for (Arquivo arquivo : listaArquivos) {
+			if (arquivo.getNome().equals(NomeArquivo)) {
+				NovoNome = NomeArquivo+"'";
+			}
+		}
+		
+		return NovoNome;
+		
+	}
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
