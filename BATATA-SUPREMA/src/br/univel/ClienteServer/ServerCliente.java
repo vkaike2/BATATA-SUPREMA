@@ -67,7 +67,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private IServer servico, servicoCliente;
 	private Registry registry, registryCliente;
 	private Arquivo arq = new Arquivo();
-	//private List<Arquivo> listaArquivos = new ArrayList<>();
+	// private List<Arquivo> listaArquivos = new ArrayList<>();
 	private List<Cliente> listaClientes = new ArrayList<>();
 	private Cliente cliente = new Cliente();
 	private Map<Cliente, List<Arquivo>> mapaClientes = new HashMap<>();
@@ -184,10 +184,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnConectar.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
-				
-				if(arg0.getKeyCode() == 10){
-					conectarCliente();
-				}
+
 			}
 		});
 
@@ -195,7 +192,6 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			public void actionPerformed(ActionEvent arg0) {
 				conectarCliente();
 
-			
 			}
 		});
 
@@ -247,6 +243,16 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		contentPane.add(lblIpCliente, gbc_lblIpCliente);
 
 		textFieldIpCliente = new JTextField();
+		textFieldIpCliente.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
+					
+					conectarCliente();
+
+				}
+			}
+		});
 		GridBagConstraints gbc_textFieldIpCliente = new GridBagConstraints();
 		gbc_textFieldIpCliente.fill = GridBagConstraints.HORIZONTAL;
 		gbc_textFieldIpCliente.anchor = GridBagConstraints.SOUTH;
@@ -294,6 +300,41 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		contentPane.add(comboBoxFiltro, gbc_comboBoxFiltro);
 
 		textFieldFiltro = new JTextField();
+		textFieldFiltro.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
+					TipoFiltro tf = null;
+					try {
+						textAreaCliente.setText(null);
+						comboBoxClientes.removeAllItems();
+						comboBoxArquivos.removeAllItems();
+						retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
+								String.valueOf(comboBoxFiltro.getSelectedItem()));
+
+						// JOptionPane.showMessageDialog(null, "Passou por aqui");
+						for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
+							Cliente cli = entry.getKey();
+
+							textAreaCliente.append(cli.getNome() + ": \n");
+							comboBoxClientes.addItem(cli.getNome());
+
+							for (int i = 0; i < entry.getValue().size(); i++) {
+								Arquivo arq = entry.getValue().get(i);
+
+								textAreaCliente.append("  " + arq.getNome() + "  " + arq.getTamanho() + "\n  ");
+								comboBoxArquivos.addItem(arq.getNome());
+							}
+						}
+
+					} catch (RemoteException a) {
+						// TODO Auto-generated catch block
+						a.printStackTrace();
+					}
+				}
+			}
+		});
 		GridBagConstraints gbc_textFieldFiltro = new GridBagConstraints();
 		gbc_textFieldFiltro.gridwidth = 2;
 		gbc_textFieldFiltro.insets = new Insets(0, 0, 5, 5);
@@ -524,7 +565,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 	public void conectarCliente() {
 		List<Arquivo> listaArquivos = new ArrayList<>();
-		
+
 		String sIp = textFieldIpCliente.getText();
 
 		String sPorta = textFieldPortaCliente.getText().trim();
@@ -549,31 +590,42 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			// cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
 
 			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
-			
-			
-			File dirStart = new File(".\\");//criar um file que sera o diretorio
-			
+
+			File dirStart = new File(".\\");// criar um file que sera o
+											// diretorio
+
 			// File dirStart = new File("C:\\Users\\"+username+"\\Desktop");
 			// File dirStart = new File("C:\\Users\\VICTOR\\Desktop\\Share");
 
-			for (File file : dirStart.listFiles()) {//para cada file da lista a cima ele vai fazer:
-				if (file.isFile()) {//se o file realmente for um file ele vai executar
+			for (File file : dirStart.listFiles()) {// para cada file da lista a
+													// cima ele vai fazer:
+				if (file.isFile()) {// se o file realmente for um file ele vai
+									// executar
 
-					Arquivo arq = new Arquivo();//criar um arquivo
-					
-					arq.setNome(file.getName());//colocar nome no arquivo
-					arq.setTamanho(file.length());// colocar o tamanho no arquivo
-					int ex = file.getName().indexOf(".");//especificar que s vai pegar a extenso
-					arq.setExtensao(file.getName().substring(ex));//colocar a extenso na esteno do arquivo
-					arq.setPath(file.getPath());//colocar o path do file no arquivo
+					Arquivo arq = new Arquivo();// criar um arquivo
 
-					listaArquivos.add(arq);//adiciona o arquivo com todos os dados a cima na lista de arquivos
+					arq.setNome(file.getName());// colocar nome no arquivo
+					arq.setTamanho(file.length());// colocar o tamanho no
+													// arquivo
+					int ex = file.getName().indexOf(".");// especificar que s
+															// vai pegar a
+															// extenso
+					arq.setExtensao(file.getName().substring(ex));// colocar a
+																	// extenso
+																	// na esteno
+																	// do
+																	// arquivo
+					arq.setPath(file.getPath());// colocar o path do file no
+												// arquivo
+
+					listaArquivos.add(arq);// adiciona o arquivo com todos os
+											// dados a cima na lista de arquivos
 				}
 			}
-			
+
 			servicoCliente.registrarCliente(cliente);
 			servicoCliente.publicarListaArquivos(cliente, listaArquivos);
-			
+
 			btnFiltrar.setEnabled(true);
 			btnDownload.setEnabled(true);
 
@@ -597,7 +649,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				servicoCliente.desconectar(cliente);
 				// UnicastRemoteObject.unexportObject(this, true);
 				servicoCliente = null;
-				
+
 			}
 
 			JOptionPane.showMessageDialog(this, "Você se desconectou do servidor");
@@ -631,23 +683,30 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
 
 		// listaGeralComTodosOsArquivosEClientes.put(c, lista);
-		
+
 		// TODO Auto-generated method stub
 
-	
+		textAreaLogArquivos.append(c.getNome() + ":\n");// pega o nome do
+														// cliente que ele vai
+														// dar no argumento do
+														// metodo
+		for (Arquivo arq : lista) {// pra cada arquivo da lista de arquivos:
 
-		textAreaLogArquivos.append(c.getNome() + ":\n");//pega o nome do cliente que ele vai dar no argumento do metodo
-		for (Arquivo arq : lista) {//pra cada arquivo da lista de arquivos:
-			
-			textAreaLogArquivos.append("   " + arq.getNome() + "\n");//imprime o nome do arquivo
+			textAreaLogArquivos.append("   " + arq.getNome() + "\n");// imprime
+																		// o
+																		// nome
+																		// do
+																		// arquivo
 
 			// System.out.println("\t" + arq.getTamanho() + "\t" +
 			// arq.getNome());
 		}
-			mapaClientes.put(c, lista);//adiciona no mapa de clientes o cliente e a lista de arquivos dele que foi criada logo a cima
-			
+		mapaClientes.put(c, lista);// adiciona no mapa de clientes o cliente e a
+									// lista de arquivos dele que foi criada
+									// logo a cima
+
 	}
-			
+
 	public void desconectar(Cliente c) throws RemoteException {
 		// TODO Auto-generated method stub
 		listaClientes.remove(c);
@@ -749,7 +808,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-
+		conectarCliente();
 	}
 
 }
