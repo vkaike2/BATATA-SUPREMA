@@ -1,16 +1,15 @@
-package br.univel.comum;
+package br.univel.jshare.comum;
 
 import java.io.Serializable;
 
+/**
+ * Identificação do cliente.
+ * 
+ */
+public class Cliente implements Serializable {
 
-
-public class Cliente implements Serializable{
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 7872144969877756966L;
-
+	private static final long serialVersionUID = 3454261032738515454L;
+	
 	private long id;
 	private String nome;
 	private String ip;
@@ -84,4 +83,5 @@ public class Cliente implements Serializable{
 			return false;
 		return true;
 	}
+
 }

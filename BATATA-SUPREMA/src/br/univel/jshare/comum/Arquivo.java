@@ -1,19 +1,14 @@
-package br.univel.comum.ArquivoDiretorio;
+package br.univel.jshare.comum;
 
 import java.io.Serializable;
 import java.util.Date;
 
+public class Arquivo implements Serializable {
 
-
-public class Arquivo implements Serializable{
-
-	/**
-	 * 
-	 */
-
-	private static final long serialVersionUID = 552916715788232463L;
+	private static final long serialVersionUID = -6433462679928213637L;
 
 	private long id;
+
 	private String path;
 	private String nome;
 	private String extensao;
@@ -134,5 +129,5 @@ public class Arquivo implements Serializable{
 			return false;
 		return true;
 	}
-	
+
 }

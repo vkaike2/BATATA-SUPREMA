@@ -1,4 +1,4 @@
-package br.univel.ClienteServer;
+package br.univel.jshare.cliente;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -25,10 +25,10 @@ import javax.swing.border.EmptyBorder;
 
 import org.omg.PortableInterceptor.ObjectReferenceTemplateSeqHelper;
 
-import br.univel.comum.Cliente;
-import br.univel.comum.IServer;
-import br.univel.comum.TipoFiltro;
-import br.univel.comum.ArquivoDiretorio.Arquivo;
+import br.univel.jshare.comum.Arquivo;
+import br.univel.jshare.comum.Cliente;
+import br.univel.jshare.comum.IServer;
+import br.univel.jshare.comum.TipoFiltro;
 
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
@@ -550,7 +550,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			JOptionPane.showMessageDialog(this, "O campo porta precisa conter algum numero");
 		}
 
-		int iPorta = Integer.parseInt(sPorta);
+		int iPorta = Integer.valueOf(sPorta);
 		if (iPorta < 1024 || iPorta > 65535) {
 			JOptionPane.showMessageDialog(this, "A porta deve estar entre 1024 e 65535");
 			return;
@@ -620,7 +620,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			JOptionPane.showMessageDialog(this, "O campo porta precisa conter algum numero");
 		}
 
-		iPorta = Integer.parseInt(sPorta);
+		iPorta = Integer.valueOf(sPorta);
 		if (iPorta < 1024 || iPorta > 65535) {
 			JOptionPane.showMessageDialog(this, "A porta deve estar entre 1024 e 65535");
 			return;

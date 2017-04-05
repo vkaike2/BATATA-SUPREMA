@@ -1,4 +1,4 @@
-package br.univel.comum.ArquivoDiretorio;
+package br.univel.testes;
 
 public class Diretorio {
 	private String nome;
