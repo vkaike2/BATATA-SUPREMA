@@ -23,6 +23,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import org.omg.PortableInterceptor.ObjectReferenceTemplateSeqHelper;
+
 import br.univel.comum.Cliente;
 import br.univel.comum.IServer;
 import br.univel.comum.TipoFiltro;
@@ -79,11 +81,12 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JScrollPane scrollPaneCliente;
 	private JTextArea textAreaCliente;
 	private JLabel lblArquivo;
-	private JTextField textFieldArquivo;
 	private JButton btnDownload;
 
 	private int iPorta;
 	private JLabel lblOnOff;
+	private JComboBox comboBoxClientes;
+	private JComboBox comboBoxArquivos;
 
 	/**
 	 * Launch the application.
@@ -112,7 +115,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[] { 0, 0, 114, 44, 0, 92, 111, 86, 0, 0 };
+		gbl_contentPane.columnWidths = new int[] { 0, 0, 114, 44, 0, 92, 111, 116, 0, 0 };
 		gbl_contentPane.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		gbl_contentPane.columnWeights = new double[] { 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, Double.MIN_VALUE };
 		gbl_contentPane.rowWeights = new double[] { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
@@ -148,7 +151,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_btnAbrirServidor.gridx = 2;
 		gbc_btnAbrirServidor.gridy = 0;
 		contentPane.add(btnAbrirServidor, gbc_btnAbrirServidor);
-		
+
 		lblOnOff = new JLabel("OFF");
 		GridBagConstraints gbc_lblOnOff = new GridBagConstraints();
 		gbc_lblOnOff.insets = new Insets(0, 0, 5, 5);
@@ -302,20 +305,26 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				TipoFiltro tf = null;
 				try {
 					textAreaCliente.setText(null);
+					comboBoxClientes.removeAllItems();
+					comboBoxArquivos.removeAllItems();
 					retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
 							String.valueOf(comboBoxFiltro.getSelectedItem()));
 
 					// JOptionPane.showMessageDialog(null, "Passou por aqui");
 					for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
 						Cliente cli = entry.getKey();
+						
 						textAreaCliente.append(cli.getNome() + ": \n");
+						comboBoxClientes.addItem(cli.getNome());
+						
 						for (int i = 0; i < entry.getValue().size(); i++) {
 							Arquivo arq = entry.getValue().get(i);
+							
 							textAreaCliente.append("  " + arq.getNome() + "  " + arq.getTamanho() + "\n  ");
+							comboBoxArquivos.addItem(arq.getNome());
 						}
 					}
 
-					
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -370,7 +379,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		textAreaCliente = new JTextArea();
 		scrollPaneCliente.setViewportView(textAreaCliente);
 
-		lblArquivo = new JLabel("Arquivo: ");
+		lblArquivo = new JLabel("Cliente/Arquivo: ");
 		GridBagConstraints gbc_lblArquivo = new GridBagConstraints();
 		gbc_lblArquivo.anchor = GridBagConstraints.EAST;
 		gbc_lblArquivo.fill = GridBagConstraints.VERTICAL;
@@ -379,15 +388,21 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_lblArquivo.gridy = 8;
 		contentPane.add(lblArquivo, gbc_lblArquivo);
 
-		textFieldArquivo = new JTextField();
-		GridBagConstraints gbc_textFieldArquivo = new GridBagConstraints();
-		gbc_textFieldArquivo.gridwidth = 2;
-		gbc_textFieldArquivo.insets = new Insets(0, 0, 0, 5);
-		gbc_textFieldArquivo.fill = GridBagConstraints.BOTH;
-		gbc_textFieldArquivo.gridx = 6;
-		gbc_textFieldArquivo.gridy = 8;
-		contentPane.add(textFieldArquivo, gbc_textFieldArquivo);
-		textFieldArquivo.setColumns(10);
+		comboBoxClientes = new JComboBox();
+		GridBagConstraints gbc_comboBoxClientes = new GridBagConstraints();
+		gbc_comboBoxClientes.insets = new Insets(0, 0, 0, 5);
+		gbc_comboBoxClientes.fill = GridBagConstraints.HORIZONTAL;
+		gbc_comboBoxClientes.gridx = 6;
+		gbc_comboBoxClientes.gridy = 8;
+		contentPane.add(comboBoxClientes, gbc_comboBoxClientes);
+
+		comboBoxArquivos = new JComboBox();
+		GridBagConstraints gbc_comboBoxArquivos = new GridBagConstraints();
+		gbc_comboBoxArquivos.insets = new Insets(0, 0, 0, 5);
+		gbc_comboBoxArquivos.fill = GridBagConstraints.HORIZONTAL;
+		gbc_comboBoxArquivos.gridx = 7;
+		gbc_comboBoxArquivos.gridy = 8;
+		contentPane.add(comboBoxArquivos, gbc_comboBoxArquivos);
 
 		btnDownload = new JButton("Download");
 		GridBagConstraints gbc_btnDownload = new GridBagConstraints();
@@ -410,6 +425,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		// coisas do Cliente
 		String username = System.getProperty("user.name");
 		cliente.setNome(username);
+		//cliente.setNome("paulo");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -420,20 +436,21 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		comboBoxFiltro.setEnabled(false);
 
 		textFieldIpCliente.setText("192.168");
-		textFieldArquivo.setEnabled(false);
 		textFieldFiltro.setEnabled(false);
 		textAreaCliente.setEditable(false);
 
 	}
-	public void atualizaStatus(){
-		if(btnAbrirServidor.isEnabled()){
+
+	public void atualizaStatus() {
+		if (btnAbrirServidor.isEnabled()) {
 			lblOnOff.setText("OFF");
 			lblOnOff.setForeground(Color.BLACK);
-		}else{
+		} else {
 			lblOnOff.setForeground(Color.red);
 			lblOnOff.setText("ON");
 		}
 	}
+
 	public void abrirServidor() {
 		String sPorta = textFieldPortaServidor.getText().trim();
 
@@ -529,7 +546,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 			btnFiltrar.setEnabled(true);
 			btnDownload.setEnabled(true);
-			textFieldArquivo.setEnabled(true);
+
 			textFieldFiltro.setEnabled(true);
 			comboBoxFiltro.setEnabled(true);
 			btnConectar.setEnabled(false);
@@ -557,7 +574,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 			btnFiltrar.setEnabled(false);
 			btnDownload.setEnabled(false);
-			textFieldArquivo.setEnabled(false);
+
 			textFieldFiltro.setEnabled(false);
 			comboBoxFiltro.setEnabled(false);
 			btnConectar.setEnabled(true);
@@ -588,10 +605,11 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		// TODO Auto-generated method stub
 
 		File dirStart = new File(".\\");
-
+		//File dirStart = new File("C:\\Users\\VICTOR\\Desktop\\Share");
+		
 		for (File file : dirStart.listFiles()) {
 			if (file.isFile()) {
-				
+
 				Arquivo arq = new Arquivo();
 				int ex;
 				arq.setNome(file.getName());
@@ -599,7 +617,6 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				ex = file.getName().indexOf(".");
 				arq.setExtensao(file.getName().substring(ex));
 				arq.setPath(file.getPath());
-				
 
 				lista.add(arq);
 			}
@@ -634,14 +651,18 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 				for (int i = 0; i < entry.getValue().size(); i++) {
 					Arquivo arq = entry.getValue().get(i);
+					
 					String nomeArquivo = arq.getNome();
 					Matcher m = pat.matcher(nomeArquivo.toLowerCase());
 
 					if (m.matches()) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
+						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);						
 					}
+					
+					
 				}
-				mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
+				
 			}
 
 		}
@@ -658,9 +679,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 					if (m.matches()) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
+						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);						
 					}
+					
 				}
-				mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 			}
 
 		}
@@ -673,10 +695,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 					if (arq.getTamanho() >= Long.parseLong(query)) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
+						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);						
 					}
-
+					
 				}
-				mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 			}
 
 		}
@@ -689,10 +711,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 					if (arq.getTamanho() <= Long.parseLong(query)) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
+						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);						
 					}
-
+					
 				}
-				mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 			}
 
 		}
@@ -704,7 +726,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public byte[] baixarArquivo(Cliente cli, Arquivo arq) throws RemoteException {
 		// TODO Auto-generated method stub
-		
+
 		return null;
 	}
 
