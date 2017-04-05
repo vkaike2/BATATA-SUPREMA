@@ -1,6 +1,7 @@
 package br.univel.ClienteServer;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.rmi.NoSuchObjectException;
 import java.rmi.NotBoundException;
@@ -82,6 +83,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JButton btnDownload;
 
 	private int iPorta;
+	private JLabel lblOnOff;
 
 	/**
 	 * Launch the application.
@@ -137,6 +139,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnAbrirServidor.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				abrirServidor();
+				atualizaStatus();
 			}
 		});
 		GridBagConstraints gbc_btnAbrirServidor = new GridBagConstraints();
@@ -145,6 +148,13 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		gbc_btnAbrirServidor.gridx = 2;
 		gbc_btnAbrirServidor.gridy = 0;
 		contentPane.add(btnAbrirServidor, gbc_btnAbrirServidor);
+		
+		lblOnOff = new JLabel("OFF");
+		GridBagConstraints gbc_lblOnOff = new GridBagConstraints();
+		gbc_lblOnOff.insets = new Insets(0, 0, 5, 5);
+		gbc_lblOnOff.gridx = 3;
+		gbc_lblOnOff.gridy = 0;
+		contentPane.add(lblOnOff, gbc_lblOnOff);
 
 		JLabel lblPortaCliente = new JLabel("Porta:");
 		GridBagConstraints gbc_lblPortaCliente = new GridBagConstraints();
@@ -210,7 +220,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			public void actionPerformed(ActionEvent arg0) {
 
 				fecharServidor();
-
+				atualizaStatus();
 			}
 		});
 		GridBagConstraints gbc_btnFecharServidor = new GridBagConstraints();
@@ -351,7 +361,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		GridBagConstraints gbc_scrollPaneCliente = new GridBagConstraints();
 		gbc_scrollPaneCliente.gridwidth = 4;
 		gbc_scrollPaneCliente.gridheight = 5;
-		gbc_scrollPaneCliente.insets = new Insets(0, 0, 5, 5);
+		gbc_scrollPaneCliente.insets = new Insets(0, 0, 5, 0);
 		gbc_scrollPaneCliente.fill = GridBagConstraints.BOTH;
 		gbc_scrollPaneCliente.gridx = 5;
 		gbc_scrollPaneCliente.gridy = 3;
@@ -395,6 +405,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		textFieldIPServidor.setText(mostrarIP());
 		textFieldPortaServidor.setText("1818");
+		lblOnOff.setText("OFF");
 
 		// coisas do Cliente
 		String username = System.getProperty("user.name");
@@ -414,7 +425,15 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		textAreaCliente.setEditable(false);
 
 	}
-
+	public void atualizaStatus(){
+		if(btnAbrirServidor.isEnabled()){
+			lblOnOff.setText("OFF");
+			lblOnOff.setForeground(Color.BLACK);
+		}else{
+			lblOnOff.setForeground(Color.red);
+			lblOnOff.setText("ON");
+		}
+	}
 	public void abrirServidor() {
 		String sPorta = textFieldPortaServidor.getText().trim();
 
@@ -579,6 +598,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				arq.setTamanho(file.length());
 				ex = file.getName().indexOf(".");
 				arq.setExtensao(file.getName().substring(ex));
+				arq.setPath(file.getPath());
+				
 
 				lista.add(arq);
 			}
@@ -683,6 +704,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public byte[] baixarArquivo(Cliente cli, Arquivo arq) throws RemoteException {
 		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
