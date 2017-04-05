@@ -50,6 +50,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class ServerCliente extends JFrame implements IServer, Runnable {
 
@@ -65,7 +67,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private IServer servico, servicoCliente;
 	private Registry registry, registryCliente;
 	private Arquivo arq = new Arquivo();
-	private List<Arquivo> listaArquivos = new ArrayList<>();
+	//private List<Arquivo> listaArquivos = new ArrayList<>();
 	private List<Cliente> listaClientes = new ArrayList<>();
 	private Cliente cliente = new Cliente();
 	private Map<Cliente, List<Arquivo>> mapaClientes = new HashMap<>();
@@ -179,6 +181,15 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		textFieldPortaCliente.setText("1818");
 
 		btnConectar = new JButton("Conectar");
+		btnConectar.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				
+				if(arg0.getKeyCode() == 10){
+					conectarCliente();
+				}
+			}
+		});
 
 		btnConectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -512,7 +523,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	}
 
 	public void conectarCliente() {
-
+		List<Arquivo> listaArquivos = new ArrayList<>();
+		
 		String sIp = textFieldIpCliente.getText();
 
 		String sPorta = textFieldPortaCliente.getText().trim();
@@ -537,6 +549,27 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			// cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
 
 			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
+			
+			
+			File dirStart = new File(".\\");//criar um file que sera o diretorio
+			
+			// File dirStart = new File("C:\\Users\\"+username+"\\Desktop");
+			// File dirStart = new File("C:\\Users\\VICTOR\\Desktop\\Share");
+
+			for (File file : dirStart.listFiles()) {//para cada file da lista a cima ele vai fazer:
+				if (file.isFile()) {//se o file realmente for um file ele vai executar
+
+					Arquivo arq = new Arquivo();//criar um arquivo
+					
+					arq.setNome(file.getName());//colocar nome no arquivo
+					arq.setTamanho(file.length());// colocar o tamanho no arquivo
+					int ex = file.getName().indexOf(".");//especificar que s vai pegar a extenso
+					arq.setExtensao(file.getName().substring(ex));//colocar a extenso na esteno do arquivo
+					arq.setPath(file.getPath());//colocar o path do file no arquivo
+
+					listaArquivos.add(arq);//adiciona o arquivo com todos os dados a cima na lista de arquivos
+				}
+			}
 			
 			servicoCliente.registrarCliente(cliente);
 			servicoCliente.publicarListaArquivos(cliente, listaArquivos);
@@ -601,25 +634,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		
 		// TODO Auto-generated method stub
 
-		File dirStart = new File(".\\");//criar um file que sera o diretorio
-		
-		// File dirStart = new File("C:\\Users\\"+username+"\\Desktop");
-		// File dirStart = new File("C:\\Users\\VICTOR\\Desktop\\Share");
-
-		for (File file : dirStart.listFiles()) {//para cada file da lista a cima ele vai fazer:
-			if (file.isFile()) {//se o file realmente for um file ele vai executar
-
-				Arquivo arq = new Arquivo();//criar um arquivo
-				
-				arq.setNome(file.getName());//colocar nome no arquivo
-				arq.setTamanho(file.length());// colocar o tamanho no arquivo
-				int ex = file.getName().indexOf(".");//especificar que só vai pegar a extensão
-				arq.setExtensao(file.getName().substring(ex));//colocar a extensão na estenção do arquivo
-				arq.setPath(file.getPath());//colocar o path do file no arquivo
-
-				lista.add(arq);//adiciona o arquivo com todos os dados a cima na lista de arquivos
-			}
-		}
+	
 
 		textAreaLogArquivos.append(c.getNome() + ":\n");//pega o nome do cliente que ele vai dar no argumento do metodo
 		for (Arquivo arq : lista) {//pra cada arquivo da lista de arquivos:
@@ -630,6 +645,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			// arq.getNome());
 		}
 			mapaClientes.put(c, lista);//adiciona no mapa de clientes o cliente e a lista de arquivos dele que foi criada logo a cima
+			
 	}
 			
 	public void desconectar(Cliente c) throws RemoteException {
