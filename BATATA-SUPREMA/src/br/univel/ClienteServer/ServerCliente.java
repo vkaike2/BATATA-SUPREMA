@@ -802,6 +802,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	public byte[] baixarArquivo(Cliente cli, Arquivo arq) throws RemoteException {
 		// TODO Auto-generated method stub
 
+		
 		return null;
 	}
 
