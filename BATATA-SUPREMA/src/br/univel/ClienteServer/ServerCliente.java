@@ -87,6 +87,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JLabel lblOnOff;
 	private JComboBox comboBoxClientes;
 	private JComboBox comboBoxArquivos;
+	private String username;
 
 	/**
 	 * Launch the application.
@@ -183,14 +184,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			public void actionPerformed(ActionEvent arg0) {
 				conectarCliente();
 
-				try {
-					servicoCliente.registrarCliente(cliente);
-					servicoCliente.publicarListaArquivos(cliente, listaArquivos);
-				} catch (RemoteException e) {
-
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+			
 			}
 		});
 
@@ -313,13 +307,13 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					// JOptionPane.showMessageDialog(null, "Passou por aqui");
 					for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
 						Cliente cli = entry.getKey();
-						
+
 						textAreaCliente.append(cli.getNome() + ": \n");
 						comboBoxClientes.addItem(cli.getNome());
-						
+
 						for (int i = 0; i < entry.getValue().size(); i++) {
 							Arquivo arq = entry.getValue().get(i);
-							
+
 							textAreaCliente.append("  " + arq.getNome() + "  " + arq.getTamanho() + "\n  ");
 							comboBoxArquivos.addItem(arq.getNome());
 						}
@@ -422,10 +416,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		textFieldPortaServidor.setText("1818");
 		lblOnOff.setText("OFF");
 
-		// coisas do Cliente
-		String username = System.getProperty("user.name");
+		username = System.getProperty("user.name");
+		cliente.setId(1);
 		cliente.setNome(username);
-		//cliente.setNome("paulo");
+		// cliente.setNome("paulo");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -543,7 +537,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			// cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
 
 			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
-
+			
+			servicoCliente.registrarCliente(cliente);
+			servicoCliente.publicarListaArquivos(cliente, listaArquivos);
+			
 			btnFiltrar.setEnabled(true);
 			btnDownload.setEnabled(true);
 
@@ -564,10 +561,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	public void desconectarCliente() {
 		try {
 			if (servicoCliente != null) {
-				desconectar(cliente);
+				servicoCliente.desconectar(cliente);
 				// UnicastRemoteObject.unexportObject(this, true);
 				servicoCliente = null;
-				listaArquivos.clear();
+				
 			}
 
 			JOptionPane.showMessageDialog(this, "Você se desconectou do servidor");
@@ -601,40 +598,44 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
 
 		// listaGeralComTodosOsArquivosEClientes.put(c, lista);
-		mapaClientes.put(c, lista);
+		
 		// TODO Auto-generated method stub
 
-		File dirStart = new File(".\\");
-		//File dirStart = new File("C:\\Users\\VICTOR\\Desktop\\Share");
+		File dirStart = new File(".\\");//criar um file que sera o diretorio
 		
-		for (File file : dirStart.listFiles()) {
-			if (file.isFile()) {
+		// File dirStart = new File("C:\\Users\\"+username+"\\Desktop");
+		// File dirStart = new File("C:\\Users\\VICTOR\\Desktop\\Share");
 
-				Arquivo arq = new Arquivo();
-				int ex;
-				arq.setNome(file.getName());
-				arq.setTamanho(file.length());
-				ex = file.getName().indexOf(".");
-				arq.setExtensao(file.getName().substring(ex));
-				arq.setPath(file.getPath());
+		for (File file : dirStart.listFiles()) {//para cada file da lista a cima ele vai fazer:
+			if (file.isFile()) {//se o file realmente for um file ele vai executar
 
-				lista.add(arq);
+				Arquivo arq = new Arquivo();//criar um arquivo
+				
+				arq.setNome(file.getName());//colocar nome no arquivo
+				arq.setTamanho(file.length());// colocar o tamanho no arquivo
+				int ex = file.getName().indexOf(".");//especificar que só vai pegar a extensão
+				arq.setExtensao(file.getName().substring(ex));//colocar a extensão na estenção do arquivo
+				arq.setPath(file.getPath());//colocar o path do file no arquivo
+
+				lista.add(arq);//adiciona o arquivo com todos os dados a cima na lista de arquivos
 			}
 		}
 
-		textAreaLogArquivos.append(c.getNome() + ":\n");
-		for (Arquivo arq : lista) {
-			textAreaLogArquivos.append("   " + arq.getNome() + "\n");
+		textAreaLogArquivos.append(c.getNome() + ":\n");//pega o nome do cliente que ele vai dar no argumento do metodo
+		for (Arquivo arq : lista) {//pra cada arquivo da lista de arquivos:
+			
+			textAreaLogArquivos.append("   " + arq.getNome() + "\n");//imprime o nome do arquivo
 
 			// System.out.println("\t" + arq.getTamanho() + "\t" +
 			// arq.getNome());
 		}
+			mapaClientes.put(c, lista);//adiciona no mapa de clientes o cliente e a lista de arquivos dele que foi criada logo a cima
 	}
-
+			
 	public void desconectar(Cliente c) throws RemoteException {
 		// TODO Auto-generated method stub
-		mapaClientes.remove(c);
-		textAreaServidor.append(cliente.getNome() + " se desconectou\n");
+		listaClientes.remove(c);
+		textAreaServidor.append(c.getNome() + " se desconectou\n");
 	}
 
 	@Override
@@ -651,18 +652,17 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 				for (int i = 0; i < entry.getValue().size(); i++) {
 					Arquivo arq = entry.getValue().get(i);
-					
+
 					String nomeArquivo = arq.getNome();
 					Matcher m = pat.matcher(nomeArquivo.toLowerCase());
 
 					if (m.matches()) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
-						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);						
+						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 					}
-					
-					
+
 				}
-				
+
 			}
 
 		}
@@ -679,9 +679,9 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 					if (m.matches()) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
-						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);						
+						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 					}
-					
+
 				}
 			}
 
@@ -695,9 +695,9 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 					if (arq.getTamanho() >= Long.parseLong(query)) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
-						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);						
+						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 					}
-					
+
 				}
 			}
 
@@ -711,9 +711,9 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 					if (arq.getTamanho() <= Long.parseLong(query)) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
-						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);						
+						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 					}
-					
+
 				}
 			}
 
