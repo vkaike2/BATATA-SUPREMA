@@ -23,6 +23,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+
 import org.omg.PortableInterceptor.ObjectReferenceTemplateSeqHelper;
 
 import br.univel.comum.Cliente;
@@ -306,6 +307,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				if(e.getKeyCode() == KeyEvent.VK_ENTER){
 					Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
 					TipoFiltro tf = null;
+					
 					try {
 						textAreaCliente.setText(null);
 						comboBoxClientes.removeAllItems();
@@ -349,28 +351,31 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			public void actionPerformed(ActionEvent arg0) {
 				Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
 				TipoFiltro tf = null;
+				
+				
+				
 				try {
 					textAreaCliente.setText(null);
 					comboBoxClientes.removeAllItems();
 					comboBoxArquivos.removeAllItems();
 					retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
 							String.valueOf(comboBoxFiltro.getSelectedItem()));
-
+					
 					// JOptionPane.showMessageDialog(null, "Passou por aqui");
 					for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
 						Cliente cli = entry.getKey();
-
+						
 						textAreaCliente.append(cli.getNome() + ": \n");
 						comboBoxClientes.addItem(cli.getNome());
-
+						
 						for (int i = 0; i < entry.getValue().size(); i++) {
 							Arquivo arq = entry.getValue().get(i);
-
+							
 							textAreaCliente.append("  " + arq.getNome() + "  " + arq.getTamanho() + "\n  ");
 							comboBoxArquivos.addItem(arq.getNome());
 						}
 					}
-
+					
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
