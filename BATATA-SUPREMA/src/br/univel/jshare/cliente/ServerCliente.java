@@ -71,7 +71,6 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JButton btnDesconectar;
 	private IServer servico, servicoCliente;
 	private Registry registry, registryCliente;
-	private Arquivo arq = new Arquivo();
 
 	private List<Cliente> listaClientes = new ArrayList<>();
 	private Cliente cliente = new Cliente();
@@ -310,34 +309,41 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
-					TipoFiltro tf = null;
+					/*
+					 * Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
+					 * TipoFiltro tf = null;
+					 * 
+					 * try { textAreaCliente.setText(null);
+					 * comboBoxClientes.removeAllItems();
+					 * comboBoxArquivos.removeAllItems(); retorno =
+					 * servicoCliente.procurarArquivo(textFieldFiltro.getText(),
+					 * tf, String.valueOf(comboBoxFiltro.getSelectedItem()));
+					 * 
+					 * for (Entry<Cliente, List<Arquivo>> entry :
+					 * mapaClientes.entrySet()) { Cliente cli = entry.getKey();
+					 * 
+					 * textAreaCliente.append(cli.getNome() + ": \n");
+					 * comboBoxClientes.addItem(cli.getNome());
+					 * 
+					 * for (int i = 0; i < entry.getValue().size(); i++) {
+					 * Arquivo arq = entry.getValue().get(i);
+					 * 
+					 * textAreaCliente.append("  " + arq.getNome() + "  " +
+					 * arq.getTamanho() + "\n  ");
+					 * comboBoxArquivos.addItem(arq.getNome()); } }
+					 * 
+					 * } catch (RemoteException a) { // TODO Auto-generated
+					 * catch block a.printStackTrace(); }
+					 * 
+					 */
 
-					try {
-						textAreaCliente.setText(null);
-						comboBoxClientes.removeAllItems();
-						comboBoxArquivos.removeAllItems();
-						retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
-								String.valueOf(comboBoxFiltro.getSelectedItem()));
-
-						
-						for (Entry<Cliente, List<Arquivo>> entry : mapaClientes.entrySet()) {
-							Cliente cli = entry.getKey();
-
-							textAreaCliente.append(cli.getNome() + ": \n");
-							comboBoxClientes.addItem(cli.getNome());
-
-							for (int i = 0; i < entry.getValue().size(); i++) {
-								Arquivo arq = entry.getValue().get(i);
-
-								textAreaCliente.append("  " + arq.getNome() + "  " + arq.getTamanho() + "\n  ");
-								comboBoxArquivos.addItem(arq.getNome());
-							}
+					for (Entry<Cliente, List<Arquivo>> map : mapaClientes.entrySet()) {
+						Cliente cli = map.getKey();
+						System.out.println(cli.getNome() + " : ");
+						for (Arquivo arq : map.getValue()) {
+							System.out.print(arq.getNome() + " ");
 						}
-
-					} catch (RemoteException a) {
-						// TODO Auto-generated catch block
-						a.printStackTrace();
+						System.out.println();
 					}
 				}
 			}
@@ -511,8 +517,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		username = System.getProperty("user.name");
 		cliente.setId(1);
-		//cliente.setNome(username);
-		cliente.setNome("paulo");
+		cliente.setNome(username);
+		// cliente.setNome("paul");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -633,7 +639,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
 
 			/*
-			 * Cria um File chamado dirstart que sera a pasta onde os arquivos irão ficar
+			 * Cria um File chamado dirstart que sera a pasta onde os arquivos
+			 * irão ficar
 			 */
 			File dirStart = new File(".\\");
 
@@ -641,13 +648,14 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			 * para cada arquivo da pasta ele vai procurar
 			 */
 			for (File file : dirStart.listFiles()) {
-			/*
-			 * se o arquivo for um arquivo ele vai entrar no if
-			 */
+				/*
+				 * se o arquivo for um arquivo ele vai entrar no if
+				 */
 				if (file.isFile()) {
-			/*
-			 * pra cada arquivo ele vai pegar o nome, tamanho, extensao, path e vai adicionar na listaArquivos
-			 */
+					/*
+					 * pra cada arquivo ele vai pegar o nome, tamanho, extensao,
+					 * path e vai adicionar na listaArquivos
+					 */
 					Arquivo arq = new Arquivo();
 
 					arq.setNome(file.getName());
@@ -658,14 +666,13 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 					listaArquivos.add(arq);
 				}
-					
+
 			}
-			//ele vai adicionar o cliente para uma lista de clientes
+			// ele vai adicionar o cliente para uma lista de clientes
 			servicoCliente.registrarCliente(cliente);
-			
+
 			servicoCliente.publicarListaArquivos(cliente, listaArquivos);
-		
-			
+
 			btnFiltrar.setEnabled(true);
 			btnDownload.setEnabled(true);
 
@@ -685,12 +692,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 	public void desconectarCliente() {
 		try {
-			if (servicoCliente != null) {
-				servicoCliente.desconectar(cliente);
-				// UnicastRemoteObject.unexportObject(this, true);
-				servicoCliente = null;
-				// listaArquivos.clear();
-			}
+
+			servicoCliente.desconectar(cliente);
+			// UnicastRemoteObject.unexportObject(this, true);
+			servicoCliente = null;
 
 			JOptionPane.showMessageDialog(this, "Você se desconectou do servidor");
 
@@ -713,7 +718,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public void registrarCliente(Cliente c) throws RemoteException {
 		// TODO Auto-generated method stub
-		//adiciona o cliente C que eu setei o nome la em cima para a lista de Clientes
+		// adiciona o cliente C que eu setei o nome la em cima para a lista de
+		// Clientes
 		listaClientes.add(c);
 
 		textAreaServidor.append(c.getNome() + " se conectou.\n");
@@ -723,23 +729,23 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
 		// coloca o cliente e a lista de arquivos no mapaCliente
-		
+
 		mapaClientes.put(c, lista);
 
 		textAreaLogArquivos.append(c.getNome() + ":\n");
-		
+
 		for (Arquivo arq : lista) {
 
 			textAreaLogArquivos.append("   " + arq.getNome() + "\n");
 
 		}
-		
-		//lista.clear();
+
+		// lista.clear();
 	}
 
 	public void desconectar(Cliente c) throws RemoteException {
 		// TODO Auto-generated method stub
-		listaClientes.remove(c);
+		mapaClientes.remove(c);
 		textAreaServidor.append(c.getNome() + " se desconectou\n");
 	}
 
@@ -751,24 +757,36 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		Pattern pat = Pattern.compile(".*" + query + ".*");
 
-		if (filtro.equals(String.valueOf(tipoFiltro.NOME))) {// se o filtro for
-																// igual o nome
-			//percorre todo o mapa cliente
-			for (Entry<Cliente, List<Arquivo>> entry : mapaClientes.entrySet()) {
-			//percorre todos os arquivos 
-				for (int i = 0; i < entry.getValue().size(); i++) {
-					Arquivo arq = entry.getValue().get(i);
+		if (filtro.equals(String.valueOf(tipoFiltro.NOME))) {
 
-					
-					Matcher m = pat.matcher(arq.getNome().toLowerCase());
+			for (Entry<Cliente, List<Arquivo>> entry : mapaClientes.entrySet()) {
+				Cliente cli = entry.getKey();
+				
+				
+				for (int i = 0; i < entry.getValue().size(); i++) {
+					Arquivo arqui = entry.getValue().get(i);
+					Matcher m = pat.matcher(arqui.getNome().toLowerCase());
 
 					if (m.matches()) {
-						ListaArquivoFiltrado.add(entry.getValue().get(i));
-
-						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 						
-					}
+						ListaArquivoFiltrado.add(arqui);
+						System.out.println(cli.getNome() + " ");
+						System.out.println(arqui.getNome());
 
+						mapaFiltrado.putIfAbsent(entry.getKey(), ListaArquivoFiltrado);
+						
+						System.out.println("no 1 if");
+						for (Entry<Cliente, List<Arquivo>> map : mapaFiltrado.entrySet()) {
+							Cliente clia = map.getKey();
+							System.out.println(clia.getNome() + " : ");
+							for (Arquivo arq : map.getValue()) {
+								System.out.print(arq.getNome() + " ");
+							}
+							System.out.println();
+							
+						}
+					}
+					ListaArquivoFiltrado.clear();
 				}
 
 			}
@@ -788,7 +806,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					if (m.matches()) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
 						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
-						
+
 					}
 
 				}
@@ -805,7 +823,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					if (arq.getTamanho() >= Long.parseLong(query)) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
 						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
-						
+
 					}
 
 				}
@@ -822,16 +840,28 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					if (arq.getTamanho() <= Long.parseLong(query)) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
 						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
-						
+
 					}
 
 				}
 			}
 
 		}
-		//ListaArquivoFiltrado.clear();
+		// ListaArquivoFiltrado.clear();
+		System.out.println("o return");
+		for (Entry<Cliente, List<Arquivo>> map : mapaFiltrado.entrySet()) {
+			Cliente clia = map.getKey();
+			System.out.println(clia.getNome() + " : ");
+			for (Arquivo arq : map.getValue()) {
+				System.out.print(arq.getNome() + " ");
+			}
+			System.out.println();
+		}
+
 		return mapaFiltrado;
-		
+
+		// return null;
+
 	}
 
 	@Override
