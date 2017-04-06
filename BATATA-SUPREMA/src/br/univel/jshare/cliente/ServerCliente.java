@@ -484,7 +484,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 									dados = servico.baixarArquivo(cli, arq);
 
 									escreva(new File(
-											String.valueOf(String.valueOf(comboBoxArquivos.getSelectedItem()))), dados);
+											String.valueOf(String.valueOf("Copia "+comboBoxArquivos.getSelectedItem()))), dados);
 								}
 
 							}
@@ -517,8 +517,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		username = System.getProperty("user.name");
 		cliente.setId(1);
-		cliente.setNome(username);
-		// cliente.setNome("paul");
+		//cliente.setNome(username);
+		cliente.setNome("REGINALDO");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -768,7 +768,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 					if (m.matches()) {
 						
-
+						ListaArquivoFiltrado.clear();
+						
 						ListaArquivoFiltrado.add(arqui);
 						//System.out.println(cli.getNome() + " ");
 						//System.out.println(arqui.getNome());
