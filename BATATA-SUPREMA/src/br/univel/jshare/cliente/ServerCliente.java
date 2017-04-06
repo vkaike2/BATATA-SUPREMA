@@ -472,15 +472,18 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 				TipoFiltro tf = null;
 				try {
-					Map<Cliente, List<Arquivo>> retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
+					Map<Cliente, List<Arquivo>> retornoD = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
 							String.valueOf(comboBoxFiltro.getSelectedItem()));
 
-					for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
+					for (Entry<Cliente, List<Arquivo>> entry : retornoD.entrySet()) {
 						Cliente cli = entry.getKey();
 						if (cli.getNome().equals(String.valueOf(comboBoxClientes.getSelectedItem()))) {
+							
 							for (int i = 0; i < entry.getValue().size(); i++) {
+								
 								Arquivo arq = entry.getValue().get(i);
 								if (arq.getNome().equals(String.valueOf(comboBoxArquivos.getSelectedItem()))) {
+									
 									dados = servico.baixarArquivo(cli, arq);
 
 									escreva(new File(
@@ -517,8 +520,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		username = System.getProperty("user.name");
 		cliente.setId(1);
-		//cliente.setNome(username);
-		cliente.setNome("REGINALDO");
+		cliente.setNome(username);
+		//cliente.setNome("TESTE");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -853,6 +856,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		}
 		// ListaArquivoFiltrado.clear();
+		/*
+		 * 
 		System.out.println("o return");
 		for (Entry<Cliente, List<Arquivo>> map : mapaFiltrado.entrySet()) {
 			Cliente clia = map.getKey();
@@ -862,6 +867,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			}
 			System.out.println();
 		}
+		 */
 
 		return mapaFiltrado;
 
