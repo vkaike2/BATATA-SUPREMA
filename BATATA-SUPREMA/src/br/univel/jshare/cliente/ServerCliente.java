@@ -761,21 +761,21 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 			for (Entry<Cliente, List<Arquivo>> entry : mapaClientes.entrySet()) {
 				Cliente cli = entry.getKey();
-				
-				
+
 				for (int i = 0; i < entry.getValue().size(); i++) {
 					Arquivo arqui = entry.getValue().get(i);
 					Matcher m = pat.matcher(arqui.getNome().toLowerCase());
 
 					if (m.matches()) {
 						
+
 						ListaArquivoFiltrado.add(arqui);
-						System.out.println(cli.getNome() + " ");
-						System.out.println(arqui.getNome());
+						//System.out.println(cli.getNome() + " ");
+						//System.out.println(arqui.getNome());
 
 						mapaFiltrado.putIfAbsent(entry.getKey(), ListaArquivoFiltrado);
-						
-						System.out.println("no 1 if");
+						/*
+						 * System.out.println("no 1 if");
 						for (Entry<Cliente, List<Arquivo>> map : mapaFiltrado.entrySet()) {
 							Cliente clia = map.getKey();
 							System.out.println(clia.getNome() + " : ");
@@ -783,10 +783,11 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 								System.out.print(arq.getNome() + " ");
 							}
 							System.out.println();
-							
+
 						}
+						 */
 					}
-					ListaArquivoFiltrado.clear();
+
 				}
 
 			}
@@ -804,6 +805,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					Matcher m = pat.matcher(arq.getExtensao().toLowerCase());
 
 					if (m.matches()) {
+						ListaArquivoFiltrado.clear();
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
 						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 
@@ -821,6 +823,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					Arquivo arq = entry.getValue().get(i);
 
 					if (arq.getTamanho() >= Long.parseLong(query)) {
+						ListaArquivoFiltrado.clear();
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
 						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 
@@ -838,6 +841,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					Arquivo arq = entry.getValue().get(i);
 
 					if (arq.getTamanho() <= Long.parseLong(query)) {
+						ListaArquivoFiltrado.clear();
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
 						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
 
