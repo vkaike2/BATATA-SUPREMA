@@ -72,7 +72,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private IServer servico, servicoCliente;
 	private Registry registry, registryCliente;
 	private Arquivo arq = new Arquivo();
-	// private List<Arquivo> listaArquivos = new ArrayList<>();
+
 	private List<Cliente> listaClientes = new ArrayList<>();
 	private Cliente cliente = new Cliente();
 	private Map<Cliente, List<Arquivo>> mapaClientes = new HashMap<>();
@@ -95,7 +95,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JComboBox comboBoxClientes;
 	private JComboBox comboBoxArquivos;
 	private String username;
-	private List<Arquivo> listaArquivos = new ArrayList<>();
+	// private List<Arquivo> listaArquivos = new ArrayList<>();
 
 	/**
 	 * Launch the application.
@@ -190,7 +190,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnConectar.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
-				
+
 			}
 		});
 
@@ -320,9 +320,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 						retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
 								String.valueOf(comboBoxFiltro.getSelectedItem()));
 
-						// JOptionPane.showMessageDialog(null, "Passou por
-						// aqui");
-						for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
+						
+						for (Entry<Cliente, List<Arquivo>> entry : mapaClientes.entrySet()) {
 							Cliente cli = entry.getKey();
 
 							textAreaCliente.append(cli.getNome() + ": \n");
@@ -462,36 +461,35 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnDownload = new JButton("Download");
 		btnDownload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				byte[] dados;
-				
+
 				TipoFiltro tf = null;
 				try {
 					Map<Cliente, List<Arquivo>> retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
 							String.valueOf(comboBoxFiltro.getSelectedItem()));
-					
+
 					for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
 						Cliente cli = entry.getKey();
-						if(cli.getNome().equals(String.valueOf(comboBoxClientes.getSelectedItem()))){
+						if (cli.getNome().equals(String.valueOf(comboBoxClientes.getSelectedItem()))) {
 							for (int i = 0; i < entry.getValue().size(); i++) {
 								Arquivo arq = entry.getValue().get(i);
-								if(arq.getNome().equals(String.valueOf(comboBoxArquivos.getSelectedItem()))){
+								if (arq.getNome().equals(String.valueOf(comboBoxArquivos.getSelectedItem()))) {
 									dados = servico.baixarArquivo(cli, arq);
-									
-									escreva(new File(String.valueOf(validadorArquivo(String.valueOf(comboBoxArquivos.getSelectedItem())))), dados);
+
+									escreva(new File(
+											String.valueOf(String.valueOf(comboBoxArquivos.getSelectedItem()))), dados);
 								}
-								
+
 							}
 						}
-						
+
 					}
 				} catch (RemoteException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				
-				
-				
+
 			}
 		});
 		GridBagConstraints gbc_btnDownload = new GridBagConstraints();
@@ -513,8 +511,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		username = System.getProperty("user.name");
 		cliente.setId(1);
-		cliente.setNome(username);
-		// cliente.setNome("paulo");
+		//cliente.setNome(username);
+		cliente.setNome("paulo");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -607,8 +605,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	}
 
 	public void conectarCliente() {
-		
 
+		List<Arquivo> listaArquivos = new ArrayList<>();
 		String sIp = textFieldIpCliente.getText();
 
 		String sPorta = textFieldPortaCliente.getText().trim();
@@ -634,42 +632,40 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
 
-			
-			
-			File dirStart = new File(".\\");// criar um file que sera o
-											// diretorio
-			// File dirStart = new File("C:\\Users\\"+username+"\\Desktop");
-			// File dirStart = new File("C:\\Users\\VICTOR\\Desktop\\Share");
+			/*
+			 * Cria um File chamado dirstart que sera a pasta onde os arquivos irão ficar
+			 */
+			File dirStart = new File(".\\");
 
-			for (File file : dirStart.listFiles()) {// para cada file da lista a
-													// cima ele vai fazer:
-				if (file.isFile()) {// se o file realmente for um file ele vai
-									// executar
+			/*
+			 * para cada arquivo da pasta ele vai procurar
+			 */
+			for (File file : dirStart.listFiles()) {
+			/*
+			 * se o arquivo for um arquivo ele vai entrar no if
+			 */
+				if (file.isFile()) {
+			/*
+			 * pra cada arquivo ele vai pegar o nome, tamanho, extensao, path e vai adicionar na listaArquivos
+			 */
+					Arquivo arq = new Arquivo();
 
-					Arquivo arq = new Arquivo();// criar um arquivo
+					arq.setNome(file.getName());
+					arq.setTamanho(file.length());
+					int ex = file.getName().indexOf(".");
+					arq.setExtensao(file.getName().substring(ex));
+					arq.setPath(file.getPath());
 
-					arq.setNome(file.getName());// colocar nome no arquivo
-					arq.setTamanho(file.length());// colocar o tamanho no
-													// arquivo
-					int ex = file.getName().indexOf(".");// especificar que s
-															// vai pegar a
-															// extenso
-					arq.setExtensao(file.getName().substring(ex));// colocar a
-																	// extenso
-																	// na esteno
-																	// do
-																	// arquivo
-					arq.setPath(file.getPath());// colocar o path do file no
-												// arquivo
-
-					listaArquivos.add(arq);// adiciona o arquivo com todos os
-											// dados a cima na lista de arquivos
+					listaArquivos.add(arq);
 				}
+					
 			}
-
+			//ele vai adicionar o cliente para uma lista de clientes
 			servicoCliente.registrarCliente(cliente);
+			
 			servicoCliente.publicarListaArquivos(cliente, listaArquivos);
-
+		
+			
 			btnFiltrar.setEnabled(true);
 			btnDownload.setEnabled(true);
 
@@ -693,7 +689,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				servicoCliente.desconectar(cliente);
 				// UnicastRemoteObject.unexportObject(this, true);
 				servicoCliente = null;
-
+				// listaArquivos.clear();
 			}
 
 			JOptionPane.showMessageDialog(this, "Você se desconectou do servidor");
@@ -717,6 +713,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	@Override
 	public void registrarCliente(Cliente c) throws RemoteException {
 		// TODO Auto-generated method stub
+		//adiciona o cliente C que eu setei o nome la em cima para a lista de Clientes
 		listaClientes.add(c);
 
 		textAreaServidor.append(c.getNome() + " se conectou.\n");
@@ -725,30 +722,19 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 	@Override
 	public void publicarListaArquivos(Cliente c, List<Arquivo> lista) throws RemoteException {
+		// coloca o cliente e a lista de arquivos no mapaCliente
+		
+		mapaClientes.put(c, lista);
 
-		// listaGeralComTodosOsArquivosEClientes.put(c, lista);
+		textAreaLogArquivos.append(c.getNome() + ":\n");
+		
+		for (Arquivo arq : lista) {
 
-		// TODO Auto-generated method stub
+			textAreaLogArquivos.append("   " + arq.getNome() + "\n");
 
-		textAreaLogArquivos.append(c.getNome() + ":\n");// pega o nome do
-														// cliente que ele vai
-														// dar no argumento do
-														// metodo
-		for (Arquivo arq : lista) {// pra cada arquivo da lista de arquivos:
-
-			textAreaLogArquivos.append("   " + arq.getNome() + "\n");// imprime
-																		// o
-																		// nome
-																		// do
-																		// arquivo
-
-			// System.out.println("\t" + arq.getTamanho() + "\t" +
-			// arq.getNome());
 		}
-		mapaClientes.put(c, lista);// adiciona no mapa de clientes o cliente e a
-									// lista de arquivos dele que foi criada
-									// logo a cima
-
+		
+		//lista.clear();
 	}
 
 	public void desconectar(Cliente c) throws RemoteException {
@@ -765,19 +751,22 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		Pattern pat = Pattern.compile(".*" + query + ".*");
 
-		if (filtro.equals(String.valueOf(tipoFiltro.NOME))) {
-
+		if (filtro.equals(String.valueOf(tipoFiltro.NOME))) {// se o filtro for
+																// igual o nome
+			//percorre todo o mapa cliente
 			for (Entry<Cliente, List<Arquivo>> entry : mapaClientes.entrySet()) {
-
+			//percorre todos os arquivos 
 				for (int i = 0; i < entry.getValue().size(); i++) {
 					Arquivo arq = entry.getValue().get(i);
 
-					String nomeArquivo = arq.getNome();
-					Matcher m = pat.matcher(nomeArquivo.toLowerCase());
+					
+					Matcher m = pat.matcher(arq.getNome().toLowerCase());
 
 					if (m.matches()) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
+
 						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
+						
 					}
 
 				}
@@ -799,6 +788,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					if (m.matches()) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
 						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
+						
 					}
 
 				}
@@ -815,6 +805,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					if (arq.getTamanho() >= Long.parseLong(query)) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
 						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
+						
 					}
 
 				}
@@ -831,33 +822,35 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					if (arq.getTamanho() <= Long.parseLong(query)) {
 						ListaArquivoFiltrado.add(entry.getValue().get(i));
 						mapaFiltrado.put(entry.getKey(), ListaArquivoFiltrado);
+						
 					}
 
 				}
 			}
 
 		}
-
+		//ListaArquivoFiltrado.clear();
 		return mapaFiltrado;
-
+		
 	}
 
 	@Override
 	public byte[] baixarArquivo(Cliente cli, Arquivo arq) throws RemoteException {
-		
+
 		byte[] dados = null;
 		// TODO Auto-generated method stub
-		
+
 		Path path = Paths.get(arq.getPath());
 		try {
 			dados = Files.readAllBytes(path);
-			
+
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 		return dados;
-		
+
 	}
+
 	public void escreva(File arq, byte[] dados) {
 		try {
 			Files.write(Paths.get(arq.getPath()), dados, StandardOpenOption.CREATE);
@@ -866,18 +859,18 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		}
 
 	}
-	public String validadorArquivo(String NomeArquivo){
-		
-		String NovoNome = null;
-		for (Arquivo arquivo : listaArquivos) {
-			if (arquivo.getNome().equals(NomeArquivo)) {
-				NovoNome = NomeArquivo+"'";
-			}
-		}
-		
-		return NovoNome;
-		
-	}
+
+	/*
+	 * 
+	 * public String validadorArquivo(String NomeArquivo){
+	 * 
+	 * String NovoNome = null; for (Arquivo arquivo : listaArquivos) { if
+	 * (arquivo.getNome().equals(NomeArquivo)) { NovoNome = NomeArquivo+"'"; } }
+	 * 
+	 * return NovoNome;
+	 * 
+	 * }
+	 */
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
