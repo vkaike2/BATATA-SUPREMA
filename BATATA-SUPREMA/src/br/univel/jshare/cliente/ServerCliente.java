@@ -195,7 +195,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		btnConectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				conectarCliente();
+				run();
 
 			}
 		});
@@ -309,41 +309,34 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					/*
-					 * Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
-					 * TipoFiltro tf = null;
-					 * 
-					 * try { textAreaCliente.setText(null);
-					 * comboBoxClientes.removeAllItems();
-					 * comboBoxArquivos.removeAllItems(); retorno =
-					 * servicoCliente.procurarArquivo(textFieldFiltro.getText(),
-					 * tf, String.valueOf(comboBoxFiltro.getSelectedItem()));
-					 * 
-					 * for (Entry<Cliente, List<Arquivo>> entry :
-					 * mapaClientes.entrySet()) { Cliente cli = entry.getKey();
-					 * 
-					 * textAreaCliente.append(cli.getNome() + ": \n");
-					 * comboBoxClientes.addItem(cli.getNome());
-					 * 
-					 * for (int i = 0; i < entry.getValue().size(); i++) {
-					 * Arquivo arq = entry.getValue().get(i);
-					 * 
-					 * textAreaCliente.append("  " + arq.getNome() + "  " +
-					 * arq.getTamanho() + "\n  ");
-					 * comboBoxArquivos.addItem(arq.getNome()); } }
-					 * 
-					 * } catch (RemoteException a) { // TODO Auto-generated
-					 * catch block a.printStackTrace(); }
-					 * 
-					 */
+					Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
+					TipoFiltro tf = null;
 
-					for (Entry<Cliente, List<Arquivo>> map : mapaClientes.entrySet()) {
-						Cliente cli = map.getKey();
-						System.out.println(cli.getNome() + " : ");
-						for (Arquivo arq : map.getValue()) {
-							System.out.print(arq.getNome() + " ");
+					try {
+						textAreaCliente.setText(null);
+						comboBoxClientes.removeAllItems();
+						comboBoxArquivos.removeAllItems();
+						retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
+								String.valueOf(comboBoxFiltro.getSelectedItem()));
+
+						// JOptionPane.showMessageDialog(null, "Passou por aqui");
+						for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
+							Cliente cli = entry.getKey();
+
+							textAreaCliente.append(cli.getNome() + ": \n");
+							comboBoxClientes.addItem(cli.getNome());
+
+							for (int i = 0; i < entry.getValue().size(); i++) {
+								Arquivo arq = entry.getValue().get(i);
+
+								textAreaCliente.append("  " + arq.getNome() + "  " + arq.getTamanho() + "\n  ");
+								comboBoxArquivos.addItem(arq.getNome());
+							}
 						}
-						System.out.println();
+
+					} catch (RemoteException a) {
+						// TODO Auto-generated catch block
+						a.printStackTrace();
 					}
 				}
 			}
@@ -472,22 +465,26 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 				TipoFiltro tf = null;
 				try {
-					Map<Cliente, List<Arquivo>> retornoD = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
-							String.valueOf(comboBoxFiltro.getSelectedItem()));
+					Map<Cliente, List<Arquivo>> retornoD = new HashMap<>();
+					
+					retornoD.putAll(servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,String.valueOf(comboBoxFiltro.getSelectedItem())));
 
 					for (Entry<Cliente, List<Arquivo>> entry : retornoD.entrySet()) {
+						
 						Cliente cli = entry.getKey();
+						
 						if (cli.getNome().equals(String.valueOf(comboBoxClientes.getSelectedItem()))) {
 							
 							for (int i = 0; i < entry.getValue().size(); i++) {
 								
 								Arquivo arq = entry.getValue().get(i);
+								
 								if (arq.getNome().equals(String.valueOf(comboBoxArquivos.getSelectedItem()))) {
+									
 									
 									dados = servico.baixarArquivo(cli, arq);
 
-									escreva(new File(
-											String.valueOf(String.valueOf("Copia "+comboBoxArquivos.getSelectedItem()))), dados);
+									escreva(new File(String.valueOf(String.valueOf("Copia "+comboBoxArquivos.getSelectedItem()))), dados);
 								}
 
 							}
@@ -877,7 +874,9 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 	@Override
 	public byte[] baixarArquivo(Cliente cli, Arquivo arq) throws RemoteException {
-
+		
+		
+		
 		byte[] dados = null;
 		// TODO Auto-generated method stub
 
