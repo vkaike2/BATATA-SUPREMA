@@ -195,7 +195,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		btnConectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				run();
+				//Thread t = new Thread(new ServerCliente());
+				//t.start();
+				
+				conectarCliente();
 
 			}
 		});
@@ -253,6 +256,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			public void keyPressed(KeyEvent arg0) {
 				if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
 
+					
 					conectarCliente();
 
 				}
