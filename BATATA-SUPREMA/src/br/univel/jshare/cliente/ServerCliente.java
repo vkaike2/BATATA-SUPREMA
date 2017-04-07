@@ -71,7 +71,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JButton btnDesconectar;
 	private IServer servico, servicoCliente;
 	private Registry registry, registryCliente;
-
+	private Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
 	private List<Cliente> listaClientes = new ArrayList<>();
 	private Cliente cliente = new Cliente();
 	private Map<Cliente, List<Arquivo>> mapaClientes = new HashMap<>();
@@ -195,9 +195,9 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		btnConectar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				//Thread t = new Thread(new ServerCliente());
-				//t.start();
-				
+				// Thread t = new Thread(new ServerCliente());
+				// t.start();
+
 				conectarCliente();
 
 			}
@@ -256,7 +256,6 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 			public void keyPressed(KeyEvent arg0) {
 				if (arg0.getKeyCode() == KeyEvent.VK_ENTER) {
 
-					
 					conectarCliente();
 
 				}
@@ -323,7 +322,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 						retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
 								String.valueOf(comboBoxFiltro.getSelectedItem()));
 
-						// JOptionPane.showMessageDialog(null, "Passou por aqui");
+						// JOptionPane.showMessageDialog(null, "Passou por
+						// aqui");
 						for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
 							Cliente cli = entry.getKey();
 
@@ -357,7 +357,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnFiltrar = new JButton("Filtrar");
 		btnFiltrar.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
+
 				TipoFiltro tf = null;
 
 				try {
@@ -464,41 +464,71 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		btnDownload = new JButton("Download");
 		btnDownload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-
+				Cliente cliDown = new Cliente();
+				Arquivo arqDown = new Arquivo();
 				byte[] dados;
+				
+				for (Entry<Cliente, List<Arquivo>> download : retorno.entrySet()) {
+					cliDown = download.getKey();
 
-				TipoFiltro tf = null;
-				try {
-					Map<Cliente, List<Arquivo>> retornoD = new HashMap<>();
-					
-					retornoD.putAll(servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,String.valueOf(comboBoxFiltro.getSelectedItem())));
+					if (cliDown.getNome().equals(String.valueOf(comboBoxClientes.getSelectedItem()))) {
 
-					for (Entry<Cliente, List<Arquivo>> entry : retornoD.entrySet()) {
-						
-						Cliente cli = entry.getKey();
-						
-						if (cli.getNome().equals(String.valueOf(comboBoxClientes.getSelectedItem()))) {
-							
-							for (int i = 0; i < entry.getValue().size(); i++) {
-								
-								Arquivo arq = entry.getValue().get(i);
-								
-								if (arq.getNome().equals(String.valueOf(comboBoxArquivos.getSelectedItem()))) {
+						for (int i = 0; i < download.getValue().size(); i++) {
+							arqDown = download.getValue().get(i);
+
+							if (arqDown.getNome().equals(String.valueOf(comboBoxArquivos.getSelectedItem()))) {
+								try {
+									dados = servicoCliente.baixarArquivo(cliDown, arqDown);
+									escreva(new File(String.valueOf(String.valueOf("Copia de "+comboBoxArquivos.getSelectedItem()))), dados);
 									
-									
-									dados = servico.baixarArquivo(cli, arq);
 
-									escreva(new File(String.valueOf(String.valueOf("Copia "+comboBoxArquivos.getSelectedItem()))), dados);
+								} catch (RemoteException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
 								}
-
 							}
 						}
-
 					}
-				} catch (RemoteException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
 				}
+
+				/*
+				 * 
+				 * byte[] dados;
+				 * 
+				 * TipoFiltro tf = null; try { Map<Cliente, List<Arquivo>>
+				 * retornoD = new HashMap<>();
+				 * 
+				 * retornoD.putAll(servicoCliente.procurarArquivo(
+				 * textFieldFiltro.getText(),
+				 * tf,String.valueOf(comboBoxFiltro.getSelectedItem())));
+				 * 
+				 * for (Entry<Cliente, List<Arquivo>> entry :
+				 * retornoD.entrySet()) {
+				 * 
+				 * Cliente cli = entry.getKey();
+				 * 
+				 * if (cli.getNome().equals(String.valueOf(comboBoxClientes.
+				 * getSelectedItem()))) {
+				 * 
+				 * for (int i = 0; i < entry.getValue().size(); i++) {
+				 * 
+				 * Arquivo arq = entry.getValue().get(i);
+				 * 
+				 * if (arq.getNome().equals(String.valueOf(comboBoxArquivos.
+				 * getSelectedItem()))) {
+				 * 
+				 * 
+				 * dados = servico.baixarArquivo(cli, arq); escreva(new
+				 File(String.valueOf(String.valueOf("Copia "+comboBoxArquivos.
+				  getSelectedItem()))), dados);
+				 * 
+				 * }
+				 * 
+				 * } }
+				 * 
+				 * } } catch (RemoteException e1) { // TODO Auto-generated catch
+				 * block e1.printStackTrace(); }
+				 */
 
 			}
 		});
@@ -521,8 +551,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		username = System.getProperty("user.name");
 		cliente.setId(1);
-		cliente.setNome(username);
-		//cliente.setNome("TESTE");
+		//cliente.setNome(username);
+		cliente.setNome("TESTE");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -771,25 +801,24 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					Matcher m = pat.matcher(arqui.getNome().toLowerCase());
 
 					if (m.matches()) {
-						
+
 						ListaArquivoFiltrado.clear();
-						
+
 						ListaArquivoFiltrado.add(arqui);
-						//System.out.println(cli.getNome() + " ");
-						//System.out.println(arqui.getNome());
+						// System.out.println(cli.getNome() + " ");
+						// System.out.println(arqui.getNome());
 
 						mapaFiltrado.putIfAbsent(entry.getKey(), ListaArquivoFiltrado);
 						/*
-						 * System.out.println("no 1 if");
-						for (Entry<Cliente, List<Arquivo>> map : mapaFiltrado.entrySet()) {
-							Cliente clia = map.getKey();
-							System.out.println(clia.getNome() + " : ");
-							for (Arquivo arq : map.getValue()) {
-								System.out.print(arq.getNome() + " ");
-							}
-							System.out.println();
-
-						}
+						 * System.out.println("no 1 if"); for (Entry<Cliente,
+						 * List<Arquivo>> map : mapaFiltrado.entrySet()) {
+						 * Cliente clia = map.getKey();
+						 * System.out.println(clia.getNome() + " : "); for
+						 * (Arquivo arq : map.getValue()) {
+						 * System.out.print(arq.getNome() + " "); }
+						 * System.out.println();
+						 * 
+						 * }
 						 */
 					}
 
@@ -859,15 +888,11 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		// ListaArquivoFiltrado.clear();
 		/*
 		 * 
-		System.out.println("o return");
-		for (Entry<Cliente, List<Arquivo>> map : mapaFiltrado.entrySet()) {
-			Cliente clia = map.getKey();
-			System.out.println(clia.getNome() + " : ");
-			for (Arquivo arq : map.getValue()) {
-				System.out.print(arq.getNome() + " ");
-			}
-			System.out.println();
-		}
+		 * System.out.println("o return"); for (Entry<Cliente, List<Arquivo>>
+		 * map : mapaFiltrado.entrySet()) { Cliente clia = map.getKey();
+		 * System.out.println(clia.getNome() + " : "); for (Arquivo arq :
+		 * map.getValue()) { System.out.print(arq.getNome() + " "); }
+		 * System.out.println(); }
 		 */
 
 		return mapaFiltrado;
@@ -878,19 +903,36 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 	@Override
 	public byte[] baixarArquivo(Cliente cli, Arquivo arq) throws RemoteException {
-		
-		
-		
+
 		byte[] dados = null;
+		Cliente cliBaixar = new Cliente();
+		Arquivo arqBaixar = new Arquivo();
 		// TODO Auto-generated method stub
+		for (Entry<Cliente, List<Arquivo>> baixar : mapaClientes.entrySet()) {
+			cliBaixar = baixar.getKey();
 
-		Path path = Paths.get(arq.getPath());
-		try {
-			dados = Files.readAllBytes(path);
+			if (cliBaixar.getNome().equals(cli.getNome())) {
 
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+				for (int i = 0; i < baixar.getValue().size(); i++) {
+					arqBaixar = baixar.getValue().get(i);
+
+					if (arqBaixar.getNome().equals(arq.getNome())) {
+						
+						Path path = Paths.get(arq.getPath());
+						try {
+							dados = Files.readAllBytes(path);
+
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+
+				}
+			}
+
 		}
+
+		
 		return dados;
 
 	}
