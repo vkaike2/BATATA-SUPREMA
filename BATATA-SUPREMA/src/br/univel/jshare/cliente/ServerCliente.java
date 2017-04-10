@@ -8,6 +8,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RMISocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,6 +40,9 @@ import java.awt.GridBagConstraints;
 import javax.swing.JTextField;
 import java.awt.Insets;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -59,7 +63,7 @@ import javax.swing.DefaultComboBoxModel;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class ServerCliente extends JFrame implements IServer, Runnable {
+public class ServerCliente extends JFrame implements IServer {
 
 	private JPanel contentPane;
 	private JTextField textFieldPortaServidor;
@@ -102,23 +106,41 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	 * Launch the application.
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					ServerCliente frame = new ServerCliente();
-					frame.setVisible(true);
-
-				} catch (Exception e) {
-					e.printStackTrace();
+		try {
+			ServerCliente frame = new ServerCliente();
+			frame.setVisible(true);
+			
+			RMISocketFactory.setSocketFactory( new RMISocketFactory()
+			{
+				public Socket createSocket( String host, int port )throws IOException
+				{
+					Socket socket = new Socket();
+					socket.setSoTimeout(2000);
+					socket.setSoLinger( false, 0 );
+					int timeoutMillis;
+					socket.connect( new InetSocketAddress( host, port ), 2000 );
+					return socket;
 				}
-			}
-		});
-	}
+				
+				public ServerSocket createServerSocket( int port )throws IOException
+				{
+					return new ServerSocket( port );
+				}
+			} );
+			
+			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
+	}
+	
 	/**
 	 * Create the frame.
 	 */
 	public ServerCliente() {
+		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 734, 330);
 		contentPane = new JPanel();
@@ -201,7 +223,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				// t.start();
 
 				conectarCliente();
-
+				
 			}
 		});
 
@@ -469,7 +491,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				Cliente cliDown = new Cliente();
 				Arquivo arqDown = new Arquivo();
 				byte[] dados;
-				
+
 				for (Entry<Cliente, List<Arquivo>> download : retorno.entrySet()) {
 					cliDown = download.getKey();
 
@@ -480,14 +502,16 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 							if (arqDown.getNome().equals(String.valueOf(comboBoxArquivos.getSelectedItem()))) {
 								try {
-									
+
 									dados = servicoCliente.baixarArquivo(cliDown, arqDown);
-									
-									escreva(new File(String.valueOf("Copia de "+comboBoxArquivos.getSelectedItem())), dados);
-									String emede5 = md5.getMD5Checksum(String.valueOf("Copia de "+comboBoxArquivos.getSelectedItem()));
-									if(arqDown.getMd5().equals(emede5)){
+
+									escreva(new File(String.valueOf("Copia de " + comboBoxArquivos.getSelectedItem())),
+											dados);
+									String emede5 = md5.getMD5Checksum(
+											String.valueOf("Copia de " + comboBoxArquivos.getSelectedItem()));
+									if (arqDown.getMd5().equals(emede5)) {
 										JOptionPane.showMessageDialog(null, "O arquivo foi copiado com sucesso");
-									}else{
+									} else {
 										JOptionPane.showMessageDialog(null, "O arquivo está corrompido");
 									}
 
@@ -528,8 +552,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 				 * 
 				 * 
 				 * dados = servico.baixarArquivo(cli, arq); escreva(new
-				 File(String.valueOf(String.valueOf("Copia "+comboBoxArquivos.
-				  getSelectedItem()))), dados);
+				 * File(String.valueOf(String.valueOf("Copia "+comboBoxArquivos.
+				 * getSelectedItem()))), dados);
 				 * 
 				 * }
 				 * 
@@ -561,7 +585,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		username = System.getProperty("user.name");
 		cliente.setId(1);
 		cliente.setNome(username);
-		//cliente.setNome("TESTE");
+		// cliente.setNome("TESTE");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -706,8 +730,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					int ex = file.getName().indexOf(".");
 					arq.setExtensao(file.getName().substring(ex));
 					arq.setPath(file.getPath());
-					
-					
+
 					arq.setMd5(md5.getMD5Checksum(file.getName()));
 
 					listaArquivos.add(arq);
@@ -929,7 +952,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					arqBaixar = baixar.getValue().get(i);
 
 					if (arqBaixar.getNome().equals(arq.getNome())) {
-						
+
 						Path path = Paths.get(arq.getPath());
 						try {
 							dados = Files.readAllBytes(path);
@@ -944,12 +967,10 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		}
 
-		
 		return dados;
 
 	}
-
-	public void escreva(File arq, byte[] dados) {
+	 void escreva(File arq, byte[] dados) {
 		try {
 			Files.write(Paths.get(arq.getPath()), dados, StandardOpenOption.CREATE);
 		} catch (IOException e) {
@@ -957,22 +978,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 		}
 
 	}
-
-	/*
-	 * 
-	 * public String validadorArquivo(String NomeArquivo){
-	 * 
-	 * String NovoNome = null; for (Arquivo arquivo : listaArquivos) { if
-	 * (arquivo.getNome().equals(NomeArquivo)) { NovoNome = NomeArquivo+"'"; } }
-	 * 
-	 * return NovoNome;
-	 * 
-	 * }
-	 */
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		conectarCliente();
-	}
+	
 
 }
+
