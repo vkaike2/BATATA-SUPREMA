@@ -11,6 +11,7 @@ import java.security.MessageDigest;
 public class Md5Util {
 
 	private static byte[] createChecksum(String filename) throws Exception {
+		
 		InputStream fis = new FileInputStream(filename);
 
 		byte[] buffer = new byte[1024];
@@ -52,7 +53,7 @@ public class Md5Util {
 
 	public static void main(String args[]) {
 		
-		String md5 = Md5Util.getMD5Checksum("bull.jpg");
+		String md5 = Md5Util.getMD5Checksum("teste.txt");
 		System.out.println(md5);
 
 	}

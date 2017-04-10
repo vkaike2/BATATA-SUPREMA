@@ -25,6 +25,7 @@ import javax.swing.border.EmptyBorder;
 
 import org.omg.PortableInterceptor.ObjectReferenceTemplateSeqHelper;
 
+import br.univel.comum.ArquivoDiretorio.Md5Util;
 import br.univel.jshare.comum.Arquivo;
 import br.univel.jshare.comum.Cliente;
 import br.univel.jshare.comum.IServer;
@@ -88,6 +89,7 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 	private JTextArea textAreaCliente;
 	private JLabel lblArquivo;
 	private JButton btnDownload;
+	private Md5Util md5 = new Md5Util();
 
 	private int iPorta;
 	private JLabel lblOnOff;
@@ -478,9 +480,16 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 							if (arqDown.getNome().equals(String.valueOf(comboBoxArquivos.getSelectedItem()))) {
 								try {
-									dados = servicoCliente.baixarArquivo(cliDown, arqDown);
-									escreva(new File(String.valueOf(String.valueOf("Copia de "+comboBoxArquivos.getSelectedItem()))), dados);
 									
+									dados = servicoCliente.baixarArquivo(cliDown, arqDown);
+									
+									escreva(new File(String.valueOf("Copia de "+comboBoxArquivos.getSelectedItem())), dados);
+									String emede5 = md5.getMD5Checksum(String.valueOf("Copia de "+comboBoxArquivos.getSelectedItem()));
+									if(arqDown.getMd5().equals(emede5)){
+										JOptionPane.showMessageDialog(null, "O arquivo foi copiado com sucesso");
+									}else{
+										JOptionPane.showMessageDialog(null, "O arquivo está corrompido");
+									}
 
 								} catch (RemoteException e1) {
 									// TODO Auto-generated catch block
@@ -551,8 +560,8 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 
 		username = System.getProperty("user.name");
 		cliente.setId(1);
-		//cliente.setNome(username);
-		cliente.setNome("TESTE");
+		cliente.setNome(username);
+		//cliente.setNome("TESTE");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -697,6 +706,9 @@ public class ServerCliente extends JFrame implements IServer, Runnable {
 					int ex = file.getName().indexOf(".");
 					arq.setExtensao(file.getName().substring(ex));
 					arq.setPath(file.getPath());
+					
+					
+					arq.setMd5(md5.getMD5Checksum(file.getName()));
 
 					listaArquivos.add(arq);
 				}
