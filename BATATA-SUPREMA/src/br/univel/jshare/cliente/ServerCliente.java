@@ -584,7 +584,7 @@ public class ServerCliente extends JFrame implements IServer {
 		username = System.getProperty("user.name");
 		cliente.setId(1);
 		cliente.setNome(username);
-		// cliente.setNome("TESTE");
+		//cliente.setNome("TESTE");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
