@@ -25,6 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import org.omg.PortableInterceptor.ObjectReferenceTemplateSeqHelper;
+import org.w3c.dom.ls.LSInput;
 
 import br.univel.comum.ArquivoDiretorio.Md5Util;
 import br.univel.jshare.comum.Arquivo;
@@ -100,7 +101,7 @@ public class ServerCliente extends JFrame implements IServer {
 	private JComboBox comboBoxClientes;
 	private JComboBox comboBoxArquivos;
 	private String username;
-	private List<Arquivo> listaArquivos = new ArrayList<>();
+	//private List<Arquivo> listaArquivos = new ArrayList<>();
 
 	/**
 	 * Launch the application.
@@ -503,10 +504,10 @@ public class ServerCliente extends JFrame implements IServer {
 
 									dados = servicoCliente.baixarArquivo(cliDown, arqDown);
 
-									escreva(new File(String.valueOf("Copia de " + comboBoxArquivos.getSelectedItem())),
+									escreva(new File(String.valueOf("Copia" + comboBoxArquivos.getSelectedItem())),
 											dados);
 									String emede5 = md5.getMD5Checksum(
-											String.valueOf("Copia de " + comboBoxArquivos.getSelectedItem()));
+											String.valueOf("Copia" + comboBoxArquivos.getSelectedItem()));
 									if (arqDown.getMd5().equals(emede5)) {
 										JOptionPane.showMessageDialog(null, "O arquivo foi copiado com sucesso");
 									} else {
@@ -677,7 +678,7 @@ public class ServerCliente extends JFrame implements IServer {
 
 	public void conectarCliente() {
 
-		// List<Arquivo> listaArquivos = new ArrayList<>();
+		List<Arquivo> listaArquivos = new ArrayList<>();
 		String sIp = textFieldIpCliente.getText();
 
 		String sPorta = textFieldPortaCliente.getText().trim();
@@ -699,28 +700,12 @@ public class ServerCliente extends JFrame implements IServer {
 			registryCliente = LocateRegistry.getRegistry(sIp, iPorta);
 			servicoCliente = (IServer) registryCliente.lookup(IServer.NOME_SERVICO);
 
-			// cliente = (Cliente) UnicastRemoteObject.exportObject(this, 0);
-
-			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
-
-			/*
-			 * Cria um File chamado dirstart que sera a pasta onde os arquivos
-			 * irão ficar
-			 */
 			File dirStart = new File(".\\");
 
-			/*
-			 * para cada arquivo da pasta ele vai procurar
-			 */
 			for (File file : dirStart.listFiles()) {
-				/*
-				 * se o arquivo for um arquivo ele vai entrar no if
-				 */
+
 				if (file.isFile()) {
-					/*
-					 * pra cada arquivo ele vai pegar o nome, tamanho, extensao,
-					 * path e vai adicionar na listaArquivos
-					 */
+
 					Arquivo arq = new Arquivo();
 
 					arq.setNome(file.getName().substring(0, file.getName().indexOf(".")));
@@ -735,12 +720,14 @@ public class ServerCliente extends JFrame implements IServer {
 				}
 
 			}
-			// ele vai adicionar o cliente para uma lista de clientes
+
 			servicoCliente.registrarCliente(cliente);
 
 			servicoCliente.publicarListaArquivos(cliente, listaArquivos);
 
 			new Atualiza().start();
+
+			JOptionPane.showMessageDialog(this, "Você está conectado no servidor");
 
 			btnFiltrar.setEnabled(true);
 			btnDownload.setEnabled(true);
@@ -805,7 +792,7 @@ public class ServerCliente extends JFrame implements IServer {
 
 		for (Arquivo arq : lista) {
 
-			textAreaLogArquivos.append("   " + arq.getNome() + "\n");
+			textAreaLogArquivos.append("   " + arq.getNome() + arq.getExtensao() + "\n");
 
 		}
 
@@ -982,21 +969,17 @@ public class ServerCliente extends JFrame implements IServer {
 
 	public class Atualiza extends Thread {
 		public void run() {
+			List<Arquivo> listaAtualizada = new ArrayList<>();
 			while (true) {
 				try {
-					Thread.sleep(3000);
-
+					Thread.sleep(5000);
+					// listaArquivos.clear();
 					File dirStart = new File(".\\");
 
 					for (File file : dirStart.listFiles()) {
-						/*
-						 * se o arquivo for um arquivo ele vai entrar no if
-						 */
+
 						if (file.isFile()) {
-							/*
-							 * pra cada arquivo ele vai pegar o nome, tamanho,
-							 * extensao, path e vai adicionar na listaArquivos
-							 */
+
 							Arquivo arq = new Arquivo();
 
 							arq.setNome(file.getName().substring(0, file.getName().indexOf(".")));
@@ -1007,11 +990,11 @@ public class ServerCliente extends JFrame implements IServer {
 
 							arq.setMd5(md5.getMD5Checksum(file.getName()));
 
-							listaArquivos.add(arq);
+							listaAtualizada.add(arq);
 						}
-						servicoCliente.publicarListaArquivos(cliente, listaArquivos);
-						;
+
 					}
+					servicoCliente.publicarListaArquivos(cliente, listaAtualizada);
 				} catch (Exception e) {
 					// TODO: handle exception
 				}
