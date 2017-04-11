@@ -69,6 +69,7 @@ public class ServerCliente extends JFrame implements IServer {
 	private JPanel contentPane;
 	private JTextField textFieldPortaServidor;
 	private JTextField textFieldIPServidor;
+	
 	private JTextField textFieldPortaCliente;
 	private JTextField textFieldIpCliente;
 	private JButton btnAbrirServidor;
