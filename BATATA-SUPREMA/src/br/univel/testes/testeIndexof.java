@@ -6,7 +6,7 @@ public class testeIndexof {
 	        int um;
 	        int zero;
 	        um = pro.indexOf(".");
-	        zero = pro.lastIndexOf(".");
-	        System.out.println(pro.substring(um ));
+	        //zero = pro.lastIndexOf(".");
+	        System.out.println(pro.substring(0, pro.indexOf(".")));
 	    }
 }

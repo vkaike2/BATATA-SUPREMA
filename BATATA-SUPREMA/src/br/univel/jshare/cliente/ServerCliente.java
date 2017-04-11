@@ -100,7 +100,7 @@ public class ServerCliente extends JFrame implements IServer {
 	private JComboBox comboBoxClientes;
 	private JComboBox comboBoxArquivos;
 	private String username;
-	// private List<Arquivo> listaArquivos = new ArrayList<>();
+	private List<Arquivo> listaArquivos = new ArrayList<>();
 
 	/**
 	 * Launch the application.
@@ -109,38 +109,33 @@ public class ServerCliente extends JFrame implements IServer {
 		try {
 			ServerCliente frame = new ServerCliente();
 			frame.setVisible(true);
-			
-			RMISocketFactory.setSocketFactory( new RMISocketFactory()
-			{
-				public Socket createSocket( String host, int port )throws IOException
-				{
+
+			RMISocketFactory.setSocketFactory(new RMISocketFactory() {
+				public Socket createSocket(String host, int port) throws IOException {
 					Socket socket = new Socket();
 					socket.setSoTimeout(2000);
-					socket.setSoLinger( false, 0 );
+					socket.setSoLinger(false, 0);
 					int timeoutMillis;
-					socket.connect( new InetSocketAddress( host, port ), 2000 );
+					socket.connect(new InetSocketAddress(host, port), 2000);
 					return socket;
 				}
-				
-				public ServerSocket createServerSocket( int port )throws IOException
-				{
-					return new ServerSocket( port );
+
+				public ServerSocket createServerSocket(int port) throws IOException {
+					return new ServerSocket(port);
 				}
-			} );
-			
-			
-			
+			});
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
-	
+
 	/**
 	 * Create the frame.
 	 */
 	public ServerCliente() {
-		
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 734, 330);
 		contentPane = new JPanel();
@@ -223,7 +218,7 @@ public class ServerCliente extends JFrame implements IServer {
 				// t.start();
 
 				conectarCliente();
-				
+
 			}
 		});
 
@@ -388,6 +383,7 @@ public class ServerCliente extends JFrame implements IServer {
 					textAreaCliente.setText(null);
 					comboBoxClientes.removeAllItems();
 					comboBoxArquivos.removeAllItems();
+
 					retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
 							String.valueOf(comboBoxFiltro.getSelectedItem()));
 
@@ -401,8 +397,9 @@ public class ServerCliente extends JFrame implements IServer {
 						for (int i = 0; i < entry.getValue().size(); i++) {
 							Arquivo arq = entry.getValue().get(i);
 
-							textAreaCliente.append("  " + arq.getNome() + "  " + arq.getTamanho() + "\n  ");
-							comboBoxArquivos.addItem(arq.getNome());
+							textAreaCliente.append(
+									"  " + arq.getNome() + arq.getExtensao() + "  " + arq.getTamanho() + "\n  ");
+							comboBoxArquivos.addItem(arq.getNome() + arq.getExtensao());
 						}
 					}
 
@@ -500,7 +497,8 @@ public class ServerCliente extends JFrame implements IServer {
 						for (int i = 0; i < download.getValue().size(); i++) {
 							arqDown = download.getValue().get(i);
 
-							if (arqDown.getNome().equals(String.valueOf(comboBoxArquivos.getSelectedItem()))) {
+							if ((arqDown.getNome() + arqDown.getExtensao())
+									.equals(String.valueOf(comboBoxArquivos.getSelectedItem()))) {
 								try {
 
 									dados = servicoCliente.baixarArquivo(cliDown, arqDown);
@@ -679,7 +677,7 @@ public class ServerCliente extends JFrame implements IServer {
 
 	public void conectarCliente() {
 
-		List<Arquivo> listaArquivos = new ArrayList<>();
+		// List<Arquivo> listaArquivos = new ArrayList<>();
 		String sIp = textFieldIpCliente.getText();
 
 		String sPorta = textFieldPortaCliente.getText().trim();
@@ -725,7 +723,7 @@ public class ServerCliente extends JFrame implements IServer {
 					 */
 					Arquivo arq = new Arquivo();
 
-					arq.setNome(file.getName());
+					arq.setNome(file.getName().substring(0, file.getName().indexOf(".")));
 					arq.setTamanho(file.length());
 					int ex = file.getName().indexOf(".");
 					arq.setExtensao(file.getName().substring(ex));
@@ -741,6 +739,8 @@ public class ServerCliente extends JFrame implements IServer {
 			servicoCliente.registrarCliente(cliente);
 
 			servicoCliente.publicarListaArquivos(cliente, listaArquivos);
+
+			new Atualiza().start();
 
 			btnFiltrar.setEnabled(true);
 			btnDownload.setEnabled(true);
@@ -970,7 +970,8 @@ public class ServerCliente extends JFrame implements IServer {
 		return dados;
 
 	}
-	 void escreva(File arq, byte[] dados) {
+
+	void escreva(File arq, byte[] dados) {
 		try {
 			Files.write(Paths.get(arq.getPath()), dados, StandardOpenOption.CREATE);
 		} catch (IOException e) {
@@ -978,7 +979,43 @@ public class ServerCliente extends JFrame implements IServer {
 		}
 
 	}
-	
 
+	public class Atualiza extends Thread {
+		public void run() {
+			while (true) {
+				try {
+					Thread.sleep(3000);
+
+					File dirStart = new File(".\\");
+
+					for (File file : dirStart.listFiles()) {
+						/*
+						 * se o arquivo for um arquivo ele vai entrar no if
+						 */
+						if (file.isFile()) {
+							/*
+							 * pra cada arquivo ele vai pegar o nome, tamanho,
+							 * extensao, path e vai adicionar na listaArquivos
+							 */
+							Arquivo arq = new Arquivo();
+
+							arq.setNome(file.getName().substring(0, file.getName().indexOf(".")));
+							arq.setTamanho(file.length());
+							int ex = file.getName().indexOf(".");
+							arq.setExtensao(file.getName().substring(ex));
+							arq.setPath(file.getPath());
+
+							arq.setMd5(md5.getMD5Checksum(file.getName()));
+
+							listaArquivos.add(arq);
+						}
+						servicoCliente.publicarListaArquivos(cliente, listaArquivos);
+						;
+					}
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			}
+		}
+	}
 }
-
