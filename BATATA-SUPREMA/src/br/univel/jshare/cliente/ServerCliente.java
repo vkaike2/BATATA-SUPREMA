@@ -591,13 +591,13 @@ public class ServerCliente extends JFrame implements IServer {
 		textFieldIPServidor.setText(mostrarIP());
 		textFieldPortaServidor.setText("1818");
 		lblOnOff.setText("OFF");
-
+		
 		username = System.getProperty("user.name");
 		cliente.setId(1);
 		cliente.setNome(username);
 		//cliente.setNome("TESTE");
 		cliente.setIp(mostrarIP());
-		cliente.setPorta(1818);
+		cliente.setPorta(iPorta);
 
 		btnFiltrar.setEnabled(false);
 		btnDesconectar.setEnabled(false);
@@ -623,7 +623,8 @@ public class ServerCliente extends JFrame implements IServer {
 
 	public void abrirServidor() {
 		String sPorta = textFieldPortaServidor.getText().trim();
-
+		
+		
 		if (!sPorta.matches("[0-9]+") || sPorta.length() > 5) {
 			JOptionPane.showMessageDialog(this, "A porta deve ser um valor numérico de no máximo 5 dígitos!");
 			return;
