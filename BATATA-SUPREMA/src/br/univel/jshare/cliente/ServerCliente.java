@@ -591,13 +591,15 @@ public class ServerCliente extends JFrame implements IServer {
 		textFieldIPServidor.setText(mostrarIP());
 		textFieldPortaServidor.setText("1818");
 		lblOnOff.setText("OFF");
-		
+		/*
 		username = System.getProperty("user.name");
 		cliente.setId(1);
 		cliente.setNome(username);
 		//cliente.setNome("TESTE");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
+		 * 
+		 */
 
 		btnFiltrar.setEnabled(false);
 		btnDesconectar.setEnabled(false);
@@ -637,6 +639,13 @@ public class ServerCliente extends JFrame implements IServer {
 			JOptionPane.showMessageDialog(this, "A porta deve estar entre 1024 e 65535");
 			return;
 		}
+
+		username = System.getProperty("user.name");
+		cliente.setId(1);
+		cliente.setNome(username);
+		//cliente.setNome("TESTE");
+		cliente.setIp(mostrarIP());
+		cliente.setPorta(iPorta);
 
 		try {
 			servico = (IServer) UnicastRemoteObject.exportObject(this, 0);
