@@ -69,15 +69,15 @@ public class ServerCliente extends JFrame implements IServer {
 	private JPanel contentPane;
 	private JTextField textFieldPortaServidor;
 	private JTextField textFieldIPServidor;
-	
+
 	private JTextField textFieldPortaCliente;
 	private JTextField textFieldIpCliente;
 	private JButton btnAbrirServidor;
 	private JButton btnFecharServidor;
 	private JButton btnConectar;
 	private JButton btnDesconectar;
-	private IServer servico, servicoCliente;
-	private Registry registry, registryCliente;
+	private IServer servico, servicoCliente, servicoCliente1;
+	private Registry registry, registryCliente, registryCliente1;
 	private Map<Cliente, List<Arquivo>> retorno = new HashMap<>();
 	private List<Cliente> listaClientes = new ArrayList<>();
 	private Cliente cliente = new Cliente();
@@ -102,7 +102,7 @@ public class ServerCliente extends JFrame implements IServer {
 	private JComboBox comboBoxClientes;
 	private JComboBox comboBoxArquivos;
 	private String username;
-	//private List<Arquivo> listaArquivos = new ArrayList<>();
+	// private List<Arquivo> listaArquivos = new ArrayList<>();
 
 	/**
 	 * Launch the application.
@@ -400,8 +400,8 @@ public class ServerCliente extends JFrame implements IServer {
 							Arquivo arq = entry.getValue().get(i);
 
 							textAreaCliente.append(
-									"  " + arq.getNome() + arq.getExtensao() + "  " + arq.getTamanho() + "\n  ");
-							comboBoxArquivos.addItem(arq.getNome() + arq.getExtensao());
+									"  " + arq.getNome() + "." + arq.getExtensao() + "  " + arq.getTamanho() + "\n  ");
+							comboBoxArquivos.addItem(arq.getNome() + "." + arq.getExtensao());
 						}
 					}
 
@@ -487,6 +487,7 @@ public class ServerCliente extends JFrame implements IServer {
 		btnDownload = new JButton("Download");
 		btnDownload.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+
 				Cliente cliDown = new Cliente();
 				Arquivo arqDown = new Arquivo();
 				byte[] dados;
@@ -499,23 +500,32 @@ public class ServerCliente extends JFrame implements IServer {
 						for (int i = 0; i < download.getValue().size(); i++) {
 							arqDown = download.getValue().get(i);
 
-							if ((arqDown.getNome() + arqDown.getExtensao())
+							if ((arqDown.getNome() + "." + arqDown.getExtensao())
 									.equals(String.valueOf(comboBoxArquivos.getSelectedItem()))) {
 								try {
 
-									dados = servicoCliente.baixarArquivo(cliDown, arqDown);
+									registryCliente1 = LocateRegistry.getRegistry(cliDown.getIp(), cliDown.getPorta());
+									servicoCliente1 = (IServer) registryCliente1.lookup(IServer.NOME_SERVICO);
+
+									dados = servicoCliente1.baixarArquivo(cliDown, arqDown);
 
 									escreva(new File(String.valueOf("Copia" + comboBoxArquivos.getSelectedItem())),
 											dados);
+									servicoCliente1 = null;
 									String emede5 = md5.getMD5Checksum(
 											String.valueOf("Copia" + comboBoxArquivos.getSelectedItem()));
+									JOptionPane.showMessageDialog(null, "parou aqui");
 									if (arqDown.getMd5().equals(emede5)) {
+
 										JOptionPane.showMessageDialog(null, "O arquivo foi copiado com sucesso");
 									} else {
 										JOptionPane.showMessageDialog(null, "O arquivo está corrompido");
 									}
 
 								} catch (RemoteException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								} catch (NotBoundException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -587,7 +597,7 @@ public class ServerCliente extends JFrame implements IServer {
 		cliente.setNome(username);
 		//cliente.setNome("TESTE");
 		cliente.setIp(mostrarIP());
-		cliente.setPorta(iPorta);
+		cliente.setPorta(1818);
 
 		btnFiltrar.setEnabled(false);
 		btnDesconectar.setEnabled(false);
@@ -711,8 +721,8 @@ public class ServerCliente extends JFrame implements IServer {
 
 					arq.setNome(file.getName().substring(0, file.getName().indexOf(".")));
 					arq.setTamanho(file.length());
-					int ex = file.getName().indexOf(".");
-					arq.setExtensao(file.getName().substring(ex));
+					int ex = file.getName().lastIndexOf(".");
+					arq.setExtensao(file.getName().substring(ex + 1));
 					arq.setPath(file.getPath());
 
 					arq.setMd5(md5.getMD5Checksum(file.getName()));
@@ -793,7 +803,7 @@ public class ServerCliente extends JFrame implements IServer {
 
 		for (Arquivo arq : lista) {
 
-			textAreaLogArquivos.append("   " + arq.getNome() + arq.getExtensao() + "\n");
+			textAreaLogArquivos.append("   " + arq.getNome() + "." + arq.getExtensao() + "\n");
 
 		}
 
@@ -926,33 +936,15 @@ public class ServerCliente extends JFrame implements IServer {
 
 	@Override
 	public byte[] baixarArquivo(Cliente cli, Arquivo arq) throws RemoteException {
+		TipoFiltro tf = null;
 
 		byte[] dados = null;
-		Cliente cliBaixar = new Cliente();
-		Arquivo arqBaixar = new Arquivo();
-		// TODO Auto-generated method stub
-		for (Entry<Cliente, List<Arquivo>> baixar : mapaClientes.entrySet()) {
-			cliBaixar = baixar.getKey();
+		Path path = Paths.get(arq.getPath());
+		try {
+			dados = Files.readAllBytes(path);
 
-			if (cliBaixar.getNome().equals(cli.getNome())) {
-
-				for (int i = 0; i < baixar.getValue().size(); i++) {
-					arqBaixar = baixar.getValue().get(i);
-
-					if (arqBaixar.getNome().equals(arq.getNome())) {
-
-						Path path = Paths.get(arq.getPath());
-						try {
-							dados = Files.readAllBytes(path);
-
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					}
-
-				}
-			}
-
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 
 		return dados;
@@ -973,7 +965,7 @@ public class ServerCliente extends JFrame implements IServer {
 			List<Arquivo> listaAtualizada = new ArrayList<>();
 			while (true) {
 				try {
-					Thread.sleep(5000);
+					Thread.sleep(50000);
 					// listaArquivos.clear();
 					File dirStart = new File(".\\");
 
@@ -985,8 +977,8 @@ public class ServerCliente extends JFrame implements IServer {
 
 							arq.setNome(file.getName().substring(0, file.getName().indexOf(".")));
 							arq.setTamanho(file.length());
-							int ex = file.getName().indexOf(".");
-							arq.setExtensao(file.getName().substring(ex));
+							int ex = file.getName().lastIndexOf(".");
+							arq.setExtensao(file.getName().substring(ex + 1));
 							arq.setPath(file.getPath());
 
 							arq.setMd5(md5.getMD5Checksum(file.getName()));
