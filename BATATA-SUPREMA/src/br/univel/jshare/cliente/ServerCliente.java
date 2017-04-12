@@ -514,7 +514,7 @@ public class ServerCliente extends JFrame implements IServer {
 									servicoCliente1 = null;
 									String emede5 = md5.getMD5Checksum(
 											String.valueOf("Copia" + comboBoxArquivos.getSelectedItem()));
-									JOptionPane.showMessageDialog(null, "parou aqui");
+									//JOptionPane.showMessageDialog(null, "parou aqui");
 									if (arqDown.getMd5().equals(emede5)) {
 
 										JOptionPane.showMessageDialog(null, "O arquivo foi copiado com sucesso");
@@ -632,7 +632,7 @@ public class ServerCliente extends JFrame implements IServer {
 			JOptionPane.showMessageDialog(this, "O campo porta precisa conter algum numero");
 		}
 
-		int iPorta = Integer.valueOf(sPorta);
+		iPorta = Integer.valueOf(sPorta);
 		if (iPorta < 1024 || iPorta > 65535) {
 			JOptionPane.showMessageDialog(this, "A porta deve estar entre 1024 e 65535");
 			return;
@@ -702,14 +702,14 @@ public class ServerCliente extends JFrame implements IServer {
 			JOptionPane.showMessageDialog(this, "O campo porta precisa conter algum numero");
 		}
 
-		iPorta = Integer.valueOf(sPorta);
-		if (iPorta < 1024 || iPorta > 65535) {
+		int iPortac = Integer.valueOf(sPorta);
+		if (iPortac < 1024 || iPortac > 65535) {
 			JOptionPane.showMessageDialog(this, "A porta deve estar entre 1024 e 65535");
 			return;
 		}
 
 		try {
-			registryCliente = LocateRegistry.getRegistry(sIp, iPorta);
+			registryCliente = LocateRegistry.getRegistry(sIp, iPortac);
 			servicoCliente = (IServer) registryCliente.lookup(IServer.NOME_SERVICO);
 
 			File dirStart = new File(".\\");
