@@ -386,8 +386,18 @@ public class ServerCliente extends JFrame implements IServer {
 					comboBoxClientes.removeAllItems();
 					comboBoxArquivos.removeAllItems();
 
-					retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), tf,
-							String.valueOf(comboBoxFiltro.getSelectedItem()));
+						if (String.valueOf(comboBoxFiltro.getSelectedItem()).equals("NOME")) {
+							retorno = servicoCliente.procurarArquivo(textFieldFiltro.getText(), TipoFiltro.NOME,"");
+						}else if(String.valueOf(comboBoxFiltro.getSelectedItem()).equals("EXTENSAO")){
+							retorno = servicoCliente.procurarArquivo("", TipoFiltro.EXTENSAO,textFieldFiltro.getText());
+						}else if(String.valueOf(comboBoxFiltro.getSelectedItem()).equals("TAMANHO_MIN")){
+							retorno = servicoCliente.procurarArquivo("", TipoFiltro.TAMANHO_MIN,textFieldFiltro.getText());
+						}else if(String.valueOf(comboBoxFiltro.getSelectedItem()).equals("TAMANHO_MAX")){
+							retorno = servicoCliente.procurarArquivo("", TipoFiltro.TAMANHO_MAX,textFieldFiltro.getText());
+						}
+						
+						
+					
 
 					// JOptionPane.showMessageDialog(null, "Passou por aqui");
 					for (Entry<Cliente, List<Arquivo>> entry : retorno.entrySet()) {
@@ -514,7 +524,8 @@ public class ServerCliente extends JFrame implements IServer {
 									servicoCliente1 = null;
 									String emede5 = md5.getMD5Checksum(
 											String.valueOf("Copia" + comboBoxArquivos.getSelectedItem()));
-									//JOptionPane.showMessageDialog(null, "parou aqui");
+									// JOptionPane.showMessageDialog(null,
+									// "parou aqui");
 									if (arqDown.getMd5().equals(emede5)) {
 
 										JOptionPane.showMessageDialog(null, "O arquivo foi copiado com sucesso");
@@ -592,12 +603,9 @@ public class ServerCliente extends JFrame implements IServer {
 		textFieldPortaServidor.setText("1818");
 		lblOnOff.setText("OFF");
 		/*
-		username = System.getProperty("user.name");
-		cliente.setId(1);
-		cliente.setNome(username);
-		//cliente.setNome("TESTE");
-		cliente.setIp(mostrarIP());
-		cliente.setPorta(iPorta);
+		 * username = System.getProperty("user.name"); cliente.setId(1);
+		 * cliente.setNome(username); //cliente.setNome("TESTE");
+		 * cliente.setIp(mostrarIP()); cliente.setPorta(iPorta);
 		 * 
 		 */
 
@@ -625,8 +633,7 @@ public class ServerCliente extends JFrame implements IServer {
 
 	public void abrirServidor() {
 		String sPorta = textFieldPortaServidor.getText().trim();
-		
-		
+
 		if (!sPorta.matches("[0-9]+") || sPorta.length() > 5) {
 			JOptionPane.showMessageDialog(this, "A porta deve ser um valor numérico de no máximo 5 dígitos!");
 			return;
@@ -643,7 +650,7 @@ public class ServerCliente extends JFrame implements IServer {
 		username = System.getProperty("user.name");
 		cliente.setId(1);
 		cliente.setNome(username);
-		//cliente.setNome("TESTE");
+		// cliente.setNome("TESTE");
 		cliente.setIp(mostrarIP());
 		cliente.setPorta(iPorta);
 
@@ -829,10 +836,10 @@ public class ServerCliente extends JFrame implements IServer {
 	@Override
 	public Map<Cliente, List<Arquivo>> procurarArquivo(String query, TipoFiltro tipoFiltro, String filtro)
 			throws RemoteException {
-		List<Arquivo> ListaArquivoFiltrado = new ArrayList<>();
+		//List<Arquivo> ListaArquivoFiltrado = new ArrayList<>();
 		Map<Cliente, List<Arquivo>> mapaFiltrado = new HashMap<>();
-
-		Pattern pat = Pattern.compile(".*" + query + ".*");
+		/*
+		 Pattern pat = Pattern.compile(".*" + query + ".*");
 
 		if (filtro.equals(String.valueOf(tipoFiltro.NOME))) {
 
@@ -848,21 +855,9 @@ public class ServerCliente extends JFrame implements IServer {
 						ListaArquivoFiltrado.clear();
 
 						ListaArquivoFiltrado.add(arqui);
-						// System.out.println(cli.getNome() + " ");
-						// System.out.println(arqui.getNome());
 
 						mapaFiltrado.putIfAbsent(entry.getKey(), ListaArquivoFiltrado);
-						/*
-						 * System.out.println("no 1 if"); for (Entry<Cliente,
-						 * List<Arquivo>> map : mapaFiltrado.entrySet()) {
-						 * Cliente clia = map.getKey();
-						 * System.out.println(clia.getNome() + " : "); for
-						 * (Arquivo arq : map.getValue()) {
-						 * System.out.print(arq.getNome() + " "); }
-						 * System.out.println();
-						 * 
-						 * }
-						 */
+
 					}
 
 				}
@@ -928,19 +923,41 @@ public class ServerCliente extends JFrame implements IServer {
 			}
 
 		}
-		// ListaArquivoFiltrado.clear();
-		/*
-		 * 
-		 * System.out.println("o return"); for (Entry<Cliente, List<Arquivo>>
-		 * map : mapaFiltrado.entrySet()) { Cliente clia = map.getKey();
-		 * System.out.println(clia.getNome() + " : "); for (Arquivo arq :
-		 * map.getValue()) { System.out.print(arq.getNome() + " "); }
-		 * System.out.println(); }
 		 */
+		mapaClientes.forEach((k,v)->{
+			List<Arquivo> listFiles = new ArrayList<>();
+			v.forEach(e->{
+				switch (tipoFiltro) {
+					case EXTENSAO:
+						if(e.getExtensao().toLowerCase().contains(filtro.toLowerCase())){
+							listFiles.add(e);	
+						}
+					break;
+					case NOME:
+						if(e.getNome().toLowerCase().contains(query.toLowerCase())){
+							listFiles.add(e);
+						}
+					break;
+					case TAMANHO_MAX:
+						int valor = Integer.parseInt(filtro);
+						if(e.getTamanho() <= valor){
+							listFiles.add(e);
+						}
+					break;
+					case TAMANHO_MIN:
+						int valor1 = Integer.parseInt(filtro);
+						if(e.getTamanho() <= valor1){
+							listFiles.add(e);
+						}
+					break;
+				}
+			});	
+			mapaFiltrado.put(k, listFiles);
+		});
+		
+		
 
 		return mapaFiltrado;
-
-		// return null;
 
 	}
 
